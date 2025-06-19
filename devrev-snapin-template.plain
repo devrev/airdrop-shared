@@ -1,0 +1,78 @@
+***Definitions:***
+
+- The Snap-In is a TypeScript Node.js application.
+
+- The Function implements part of The Snap-In functionality.
+
+- The External Domain Metadata is a JSON object that describes the logical domain model of an external system. It defines the types of external record types, the relationships between those record types, and the metadata associated with each field, including the field’s data type, human-readable name, and other descriptive attributes.
+
+- The Initial Domain Mapping is a JSON object that defines how the logical domain model described by The External Domain Metadata maps to the target domain model in DevRev. It specifies the correspondence between each external record type and DevRev leaf type, as well as the mapping of individual fields, including transformation logic, value conversions, and any fixed or default values.
+
+
+***Non-Functional Requirements:***
+
+- The Snap-In must be implemented in TypeScript (The Implementation).
+
+- The Snap-In will run on Node.js as the runtime environment.
+
+- The Snap-In should use The Airdrop SDK Library version "1.4.2" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
+  - The documentation for the The Airdrop SDK Library is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
+  - Please note that 'processTask' function **only** executes task if 'processTask' function is called from a worker thread. Therefore 'processTask' function should be called from a worker thread spawned using 'Spawn' class.
+
+- Use snake_case for JSON keys.
+
+- The Implementation should include unit tests using Jest framework. The required unit test coverage threshold should be set to 60% (but please note that if the unit tests are failing the reported unit test coverage is not correct, that is, it's lower than it actually is).
+
+- The code of The Function (including tests) should be in a subfolder at the path `src/functions`. The folder name should correspond to the function name.
+
+- The shared code (including libraries, utilities, adapters, and other common code) used by multiple The Function should be placed in the `src/core` folder. The code in this folder should not depend on any specific The Function implementation.
+
+
+***Test Requirements:***
+
+- The Conformance Tests of The Snap-In should be implemented in TypeScript.
+
+- The Conformance Tests must be in the top folder.
+
+- The Conformance Tests will run on Node.js as the runtime environment.
+
+- The Conformance Tests will be executed using the "npm test" command.
+
+- The Conformance Tests must complete within 120 seconds (The Conformance Tests Timeout). If The Conformance Tests Timeout elapses, the process executing The Conformance Tests will be terminated.
+
+- The Snap-In runs on Node.js and the test server is accessible at http://localhost:8000/handle/sync (The Test Snap-In Server).
+
+- The Conformance Tests should use the The Test Snap-In Server - do not use mock server.
+
+- The Conformance Tests should spin a server at http://localhost:8002 for testing callbacks (The Callback Server).
+
+- Worker data server runs at http://localhost:8003/external-worker and therefore there is no need to mock this server nor it receives any interesting data.
+
+- DevRev server runs at http://localhost:8003 and therefore there is no need to mock this nor it receives any interesting data.
+
+
+# The TypeScript Node.js application boilerplate
+
+***Functional Requirements:***
+
+- Implement The Function that only checks if The Function can be invoked.
+
+- Implement The Function that only checks if the data extraction workflow can be invoked.
+
+  ***Acceptance Tests:***
+
+  - Test the data extraction workflow invocation using the resource [extraction_health_check.json](test_data/extraction_health_check.json).
+
+- Implement The Function that checks if pushing data works. The URL where data is to be pushed is provided in the "callback_url" field of the "event_context" dictionary which is part of "payload" dictionary.
+
+- Implement The Function that provides a test of the 'external sync units' part of the extraction workflow. The name of The Function must be 'extraction_external_sync_unit_check'.
+
+  ***Acceptance Tests:***
+
+  - Test The Function using the resource [external_sync_unit_check.json](test_data/external_sync_unit_check.json). Test is successful if The Callback Server receives from DevRev an event with "event_type" that equals "EXTRACTION_EXTERNAL_SYNC_UNITS_DONE". The test must not send the event directly to The Callback Server.
+
+- Implement The Function that provides a test of the 'data extraction' part of the extraction workflow as described in the resource [data-extraction.md](docs/data-extraction.md). Only check if data extraction can be triggered and that it successfully completes. Disregard all other details. The name of The Function must be 'data_extraction_check'.
+
+  ***Acceptance Tests:***
+  
+  - Test The Function using the resource [data_extraction_check.json](test_data/data_extraction_check.json). Test is successful if The Callback Server receives from DevRev an event with "event_type" that equals "EXTRACTION_DATA_DONE". The test must not send the event directly to The Callback Server.
