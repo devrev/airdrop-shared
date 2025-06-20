@@ -15,7 +15,7 @@
 
 - The Snap-In will run on Node.js as the runtime environment.
 
-- The Snap-In should use The Airdrop SDK Library version "1.4.2" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
+- The Snap-In should use The Airdrop SDK Library version "1.5.1" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
   - The documentation for the The Airdrop SDK Library is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
   - Please note that 'processTask' function **only** executes task if 'processTask' function is called from a worker thread. Therefore 'processTask' function should be called from a worker thread spawned using 'Spawn' class.
 

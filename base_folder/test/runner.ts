@@ -1,6 +1,21 @@
+/*
+ * Copyright (c) 2024 DevRev Inc. All rights reserved.
+
+Disclaimer:
+The code provided herein is intended solely for testing purposes.
+Under no circumstances should it be utilized in a production environment. Use of
+this code in live systems, production environments, or any situation where
+reliability and stability are critical is strongly discouraged. The code is
+provided as-is, without any warranties or guarantees of any kind, and the user
+assumes all risks associated with its use. It is the responsibility of the user 
+to ensure that proper testing and validation procedures are carried out before 
+deploying any code into production environments.
+*/
+
 import bodyParser from 'body-parser';
 import express, { Express, Handler, Request, Response } from 'express';
 
+import process from 'process';
 import { functionFactory, FunctionFactoryType } from '../src/function-factory';
 import { HTTPClient, HttpRequest } from './http_client';
 import {
@@ -16,6 +31,17 @@ import {
   SnapInsSystemUpdateRequestStatus,
   SnapInsSystemUpdateResponse,
 } from './types';
+
+
+import {
+  Context as SnapInContext,
+  ExecuteOperationResult,
+  ExecuteOperationResult_SerializationFormat,
+  ExecutionMetadata,
+  FunctionExecutionError,
+  FunctionInput,
+  OperationOutput,
+} from '@devrev/typescript-sdk/dist/snap-ins';
 
 const app: Express = express();
 app.use(bodyParser.json(), bodyParser.urlencoded({ extended: false }));
@@ -112,14 +138,17 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
         console.error(e);
       }
 
-      // post processing. result is updated in the function
-      await postRun(event, error, result);
+      // Any common post processing goes here. The function returns
+      // only if the function execution was by an operation
     }
+    const opResult = await postRun(event, error, result);
 
     // Return result.
     let res: ExecutionResult = {};
 
-    if (result !== undefined) {
+    if (opResult !== undefined) {
+      res.function_result = opResult;
+    } else if (result !== undefined) {
       res.function_result = result;
     }
 
@@ -137,11 +166,16 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
 // post processing
 async function postRun(event: any, handlerError: HandlerError, result: any) {
   console.debug('Function execution complete');
+  // Check if the function was invoked by an operation.
+  if (isInvokedFromOperation(event)) {
+    return handleOperationInvocationResult(event, handlerError, result);
+  }
   if (isActivateHook(event)) {
     handleActivateHookResult(event, handlerError, result);
   } else if (isDeactivateHook(event)) {
     handleDeactivateHookResult(event, handlerError, result);
   }
+  return undefined
 }
 
 function isActivateHook(event: any): boolean {
@@ -150,6 +184,10 @@ function isActivateHook(event: any): boolean {
 
 function isDeactivateHook(event: any): boolean {
   return event.execution_metadata.event_type === 'hook:snap_in_deactivate';
+}
+
+function isInvokedFromOperation(event: any): boolean {
+  return event.execution_metadata.operation_slug !== undefined;
 }
 
 function handleActivateHookResult(event: any, handlerError: HandlerError, result: any) {
@@ -246,4 +284,81 @@ function getDeactivateHookResult(input: any): DeactivateHookResult {
     }
   }
   return res;
+}
+
+async function handleOperationInvocationResult(
+  event: any,
+  handlerError: HandlerError,
+  result: any,
+): Promise<ExecuteOperationResult> {
+  if (result === undefined) {
+    result = generateOperationOutputFromError(handlerError);
+  }
+
+  const operationMethod = getOperationExecutionOperationMethod(event) || '';
+  if (operationMethod === 'OperationMethod_NameEnumSchemaHandler') {
+    return createExecuteOperationResult(result, ExecuteOperationResult_SerializationFormat.JSON);
+  }
+
+  return createExecuteOperationResult(result, ExecuteOperationResult_SerializationFormat.Proto);
+}
+
+function generateOperationOutputFromError(handlerError: HandlerError): OperationOutput {
+  const errorDetails: FailedExecutionError = {
+    source: FailedExecutionErrorSource.DeveloperFunction,
+    error:
+      handlerError instanceof FunctionExecutionError
+        ? handlerError
+        : new FunctionExecutionError((handlerError as unknown as Error)?.message, false),
+  };
+
+  return OperationOutput.fromJSON({ error: errorDetails }) as OperationOutput;
+}
+
+
+export enum FailedExecutionErrorSource {
+  // Source of the error not known.
+  Unknown = 'unknown',
+  // Error is returned from the developer in the function.
+  DeveloperFunction = 'developer_function',
+  // Error is returned from the platform.
+  Platform = 'platform',
+}
+
+export type FailedExecutionError = {
+  source: FailedExecutionErrorSource;
+  error: FunctionExecutionError;
+};
+
+function createExecuteOperationResult(
+  responseData: any,
+  format: ExecuteOperationResult_SerializationFormat,
+): ExecuteOperationResult {
+  let data: string;
+
+  try {
+    switch (format) {
+      case ExecuteOperationResult_SerializationFormat.Proto:
+        const uint8array: Uint8Array = OperationOutput.encode(responseData).finish();
+        data = Buffer.from(uint8array).toString('base64');
+        break;
+      case ExecuteOperationResult_SerializationFormat.JSON:
+        data = Buffer.from(JSON.stringify(responseData)).toString('base64');
+        break;
+      default:
+        throw new Error(`Unsupported serialization format: ${format}`);
+    }
+  } catch (error) {
+    console.error('Error creating operation result:', error);
+    throw new Error('Failed to create operation result');
+  }
+
+  return {
+    serialization_format: format,
+    data: data,
+  } as ExecuteOperationResult;
+}
+
+function getOperationExecutionOperationMethod(event: any): string | undefined {
+  return event.execution_metadata.operation_method;
 }
