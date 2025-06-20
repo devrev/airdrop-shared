@@ -15,7 +15,6 @@ deploying any code into production environments.
 import bodyParser from 'body-parser';
 import express, { Express, Handler, Request, Response } from 'express';
 
-import process from 'process';
 import { functionFactory, FunctionFactoryType } from '../src/function-factory';
 import { HTTPClient, HttpRequest } from './http_client';
 import {
