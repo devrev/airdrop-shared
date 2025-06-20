@@ -174,7 +174,7 @@ async function postRun(event: any, handlerError: HandlerError, result: any) {
   } else if (isDeactivateHook(event)) {
     handleDeactivateHookResult(event, handlerError, result);
   }
-  return undefined
+  return undefined;
 }
 
 function isActivateHook(event: any): boolean {
