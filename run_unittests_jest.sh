@@ -75,7 +75,7 @@ rm "$build_output"
 
 printf "### Step 2: Running unittests in $FOLDER_NAME...\n"
 
-npm test -- --runInBand --setupFilesAfterEnv="$SCRIPT_DIR/jest.setup.js" --detectOpenHandles 2>&1 | sed -E "$ANSI_ESCAPE_PATTERN"
+npm test -- --runInBand --silent --setupFilesAfterEnv="$SCRIPT_DIR/jest.setup.js" --detectOpenHandles 2>&1 | sed -E "$ANSI_ESCAPE_PATTERN"
 TEST_EXIT_CODE=$?
 
 # Check if tests failed
