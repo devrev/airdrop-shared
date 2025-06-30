@@ -127,10 +127,6 @@ async def airdrop_artifacts_upload_url(
         FormDataField(key="x-amz-meta-artifact-id", value=artifact_id),
     ]
     
-    # Add request_id to form data if provided
-    if request_id:
-        form_data.append(FormDataField(key="x-amz-meta-request-id", value=request_id))
-    
     return AirdropArtifactResponse(
         artifact_id=artifact_id,
         upload_url=upload_url,
