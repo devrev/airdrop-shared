@@ -18,6 +18,7 @@
 - The Snap-In should use The Airdrop SDK Library version "1.5.1" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
   - The documentation for the The Airdrop SDK Library is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
   - Please note that 'processTask' function **only** executes task if 'processTask' function is called from a worker thread. Therefore 'processTask' function should be called from a worker thread spawned using 'Spawn' class.
+  - If the worker is written in TypeScript, it must referenced with a .ts extension, not .js.
 
 - Use snake_case for JSON keys.
 
@@ -52,6 +53,10 @@
 
 
 # The TypeScript Node.js application boilerplate
+
+***Non-Functional Requirements:***
+
+- Details on how The Function must be invoked are provided in the resource [Function Invocation](docs/function_invocation.mdx).
 
 ***Functional Requirements:***
 
