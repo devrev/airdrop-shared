@@ -276,7 +276,7 @@ if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
   printf "Running conformance tests...\n"
 fi
 
-npm test -- --runInBand --silent --setupFilesAfterEnv="$SCRIPT_DIR/jest.setup.js" --detectOpenHandles 2>&1 | sed -E "$ANSI_ESCAPE_PATTERN"
+npm test -- --runInBand --setupFilesAfterEnv="$SCRIPT_DIR/jest.setup.js" --detectOpenHandles 2>&1 | sed -E "$ANSI_ESCAPE_PATTERN"
 conformance_tests_result=$?
 
 if [ $conformance_tests_result -ne 0 ]; then
