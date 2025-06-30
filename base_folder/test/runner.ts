@@ -1,17 +1,3 @@
-/*
- * Copyright (c) 2024 DevRev Inc. All rights reserved.
-
-Disclaimer:
-The code provided herein is intended solely for testing purposes.
-Under no circumstances should it be utilized in a production environment. Use of
-this code in live systems, production environments, or any situation where
-reliability and stability are critical is strongly discouraged. The code is
-provided as-is, without any warranties or guarantees of any kind, and the user
-assumes all risks associated with its use. It is the responsibility of the user 
-to ensure that proper testing and validation procedures are carried out before 
-deploying any code into production environments.
-*/
-
 import bodyParser from 'body-parser';
 import express, { Express, Handler, Request, Response } from 'express';
 
@@ -111,6 +97,16 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
 
   for (let event of events) {
     let result;
+    if (!event.execution_metadata) {
+      let errMsg = 'Invalid request format: missing execution_metadata';
+      error = {
+        err_type: RuntimeErrorType.InvalidRequest,
+        err_msg: errMsg,
+      } as RuntimeError;
+      console.error(error.err_msg);
+      resp.status(400).send(errMsg);
+      return;
+    }
     const functionName: FunctionFactoryType = event.execution_metadata.function_name as FunctionFactoryType;
     if (functionName === undefined) {
       error = {
