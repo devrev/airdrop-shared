@@ -117,9 +117,9 @@ async def airdrop_artifacts_upload_url(
 ):
     # Generate a unique artifact ID in the required format
     partition = "dvrv-us-1"
-    my_id = "1"
+    devOrgID = "1"
     random_int = random.randint(1, 1000)
-    artifact_id = f"don:core:{partition}:devo/{my_id}:artifact/{random_int}"
+    artifact_id = f"don:core:{partition}:devo/{devOrgID}:artifact/{random_int}"
     
     # Create a mock S3-like URL for the upload
     upload_url = f"http://localhost:8003/upload/{artifact_id}"
