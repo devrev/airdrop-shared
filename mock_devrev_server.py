@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict
 import uuid
 import json
+import random
 
 app = FastAPI()
 
@@ -114,8 +115,11 @@ async def airdrop_artifacts_upload_url(
     request_id: Optional[str] = None,
     authorization: Optional[str] = Header(None)
 ):
-    # Generate a unique artifact ID
-    artifact_id = str(uuid.uuid4())
+    # Generate a unique artifact ID in the required format
+    partition = "dvrv-us-1"
+    my_id = "1"
+    random_int = random.randint(1, 1000)
+    artifact_id = f"don:core:{partition}:devo/{my_id}:artifact/{random_int}"
     
     # Create a mock S3-like URL for the upload
     upload_url = f"http://localhost:8003/upload/{artifact_id}"
