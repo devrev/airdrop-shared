@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException, Header, UploadFile, File, Request
+from fastapi import FastAPI, HTTPException, Header, Request
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 import uuid
 import json
+import random
 
 app = FastAPI()
 
@@ -21,6 +22,11 @@ class ArtifactPrepareResponse(BaseModel):
 
 class ExternalWorkerResponse(BaseModel):
     state: str
+
+class AirdropArtifactResponse(BaseModel):
+    artifact_id: str
+    upload_url: str
+    form_data: List[FormDataField]
 
 @app.post("/upload/{artifact_id}")
 async def upload_artifact(
@@ -101,6 +107,35 @@ async def update_external_worker(request: Request):
 async def get_snap_ins(request: Request):
     print("Received /internal/snap-ins.get GET request")
     return {"status": "success"}
+
+@app.get("/internal/airdrop.artifacts.upload-url", response_model=AirdropArtifactResponse)
+async def airdrop_artifacts_upload_url(
+    file_type: str,
+    file_name: str,
+    request_id: Optional[str] = None,
+    authorization: Optional[str] = Header(None)
+):
+    # Generate a unique artifact ID in the required format
+    partition = "dvrv-us-1"
+    devOrgID = "1"
+    random_int = random.randint(1, 1000)
+    artifact_id = f"don:core:{partition}:devo/{devOrgID}:artifact/{random_int}"
+    
+    # Create a mock S3-like URL for the upload
+    upload_url = f"http://localhost:8003/upload/{artifact_id}"
+    
+    # Create form data fields that would typically be required for S3 upload
+    form_data = [
+        FormDataField(key="key", value=f"airdrop-artifacts/{artifact_id}/{file_name}"),
+        FormDataField(key="Content-Type", value=file_type),
+        FormDataField(key="x-amz-meta-artifact-id", value=artifact_id),
+    ]
+    
+    return AirdropArtifactResponse(
+        artifact_id=artifact_id,
+        upload_url=upload_url,
+        form_data=form_data
+    )
 
 if __name__ == "__main__":
     import uvicorn
