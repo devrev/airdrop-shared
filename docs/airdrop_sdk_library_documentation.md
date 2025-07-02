@@ -392,6 +392,8 @@ Defines the structure of events sent to external extractors from Airdrop platfor
 
   - _function_name_: A **string** representing the name of the the function that is being invoked.
 
+  - _event_type_: A **string** with the type of event that triggered the function invocation.
+
   - _devrev_endpoint_: A **string** representing the DevRev endpoint URL
 
 - _input_data_

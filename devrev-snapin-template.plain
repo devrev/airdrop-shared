@@ -4,6 +4,10 @@
 
 - The Function implements part of The Snap-In functionality.
 
+- The Airdrop SDK Library for TypeScript helps developers build snap-ins that integrate with DevRev’s Airdrop platform.
+  - The documentation for the The Airdrop SDK Library is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
+  - Please note that EventContextIn and EventContextOut interfaces are deprecated.
+
 - The External Domain Metadata is a JSON object that describes the logical domain model of an external system. It defines the types of external record types, the relationships between those record types, and the metadata associated with each field, including the field’s data type, human-readable name, and other descriptive attributes.
 
 - The Initial Domain Mapping is a JSON object that defines how the logical domain model described by The External Domain Metadata maps to the target domain model in DevRev. It specifies the correspondence between each external record type and DevRev leaf type, as well as the mapping of individual fields, including transformation logic, value conversions, and any fixed or default values.
@@ -16,9 +20,8 @@
 - The Snap-In will run on Node.js as the runtime environment.
 
 - The Snap-In should use The Airdrop SDK Library version "1.5.1" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
-  - The documentation for the The Airdrop SDK Library is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
   - Please note that 'processTask' function **only** executes task if 'processTask' function is called from a worker thread. Therefore 'processTask' function should be called from a worker thread spawned using 'Spawn' class.
-  - If the worker is written in TypeScript, it must referenced with a .ts extension, not .js.
+  - If the worker is written in TypeScript, it must be referenced with a .ts extension, not .js.
 
 - Use snake_case for JSON keys.
 
@@ -53,10 +56,6 @@
 
 
 # The TypeScript Node.js application boilerplate
-
-***Non-Functional Requirements:***
-
-- Details on how The Function must be invoked are provided in the resource [Function Invocation](docs/function_invocation.mdx).
 
 ***Functional Requirements:***
 
