@@ -19,12 +19,9 @@ import {
 
 
 import {
-  Context as SnapInContext,
   ExecuteOperationResult,
   ExecuteOperationResult_SerializationFormat,
-  ExecutionMetadata,
   FunctionExecutionError,
-  FunctionInput,
   OperationOutput,
 } from '@devrev/typescript-sdk/dist/snap-ins';
 

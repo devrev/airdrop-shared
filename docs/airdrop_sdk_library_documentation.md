@@ -390,6 +390,10 @@ Defines the structure of events sent to external extractors from Airdrop platfor
 
   Required. An object containing:
 
+  - _function_name_: A **string** representing the name of the the function that is being invoked.
+
+  - _event_type_: A **string** with the type of event that triggered the function invocation.
+
   - _devrev_endpoint_: A **string** representing the DevRev endpoint URL
 
 - _input_data_
@@ -738,4 +742,114 @@ await adapter.emit(ExtractorEventType.ExtractionDataDone);
 await adapter.emit(ExtractorEventType.ExtractionAttachmentsDelay, {
   delay: 10,
 });
+```
+
+### `Repo` class
+
+Manages a collection of items for a specific `itemType`. It handles item normalization (if a `normalize` function is provided) and automatically uploads the items in batches to the Airdrop platform. An instance of this class is created by the `WorkerAdapter.initializeRepos` method and can be retrieved using `WorkerAdapter.getRepo`.
+
+### Usage
+
+This class is not intended to be instantiated directly. You should use `adapter.initializeRepos()` to create `Repo` instances.
+
+### `Repo.itemType` property
+
+A read-only property that returns the item type of the repo.
+
+#### Usage
+
+```typescript
+const itemType = repo.itemType;
+```
+
+#### Example
+
+```typescript
+const tasksRepo = adapter.getRepo('tasks');
+console.log(tasksRepo.itemType); // outputs 'tasks'
+```
+
+### `Repo.getItems` method
+
+Retrieves the array of items currently held in the repo that are awaiting the next batched upload.
+
+### Usage
+
+```typescript
+repo.getItems();
+```
+
+#### Return value
+
+An array of items of type `(NormalizedItem | NormalizedAttachment | Item)[]`.
+
+#### Example
+
+```typescript
+const repo = adapter.getRepo('users');
+const remainingUsers = repo?.getItems();
+console.log(`There are ${remainingUsers.length} users waiting to be uploaded.`);
+```
+
+### `Repo.push` method
+
+Adds an array of new items to the repo. If a `normalize` function was provided during initialization, each item is normalized before being added. If adding the new items causes the total number of items in the repo to meet or exceed the `batchSize`, a batch is automatically uploaded.
+
+### Usage
+
+```typescript
+repo.push(items);
+```
+
+#### Parameters
+
+  - *items*
+
+    Required. An array of objects of type `Item` to be added to the repo.
+
+#### Return value
+
+A **promise**, which resolves to `true` if the items were successfully added (and any resulting batches were successfully uploaded) or `false` if an error occurred during batch upload.
+
+#### Example
+
+This is the primary method for adding data to be uploaded.
+
+```typescript
+// Assume 'adapter' is an initialized WorkerAdapter and 'users' is an array of user objects from an external API.
+await adapter.getRepo('users')?.push(users);
+```
+
+### `Repo.upload` method
+
+Manually triggers an upload of items to the Airdrop platform. If a `batch` is provided, only those items are uploaded. If no `batch` is provided, all items currently stored in the repo are uploaded, and the repo's internal item cache is cleared.
+
+**Note:** This method is typically called automatically by the `push` method. You only need to call it manually if you want to force an upload of the remaining items that do not fill a complete batch.
+
+### Usage
+
+```typescript
+repo.upload(batch);
+```
+
+#### Parameters
+
+  - *batch*
+
+    Optional. An array of items of type `(NormalizedItem | NormalizedAttachment | Item)[]` to be uploaded.
+
+#### Return value
+
+A **promise**, which resolves to `undefined` on a successful upload or an `ErrorRecord` if the upload fails.
+
+#### Example
+
+```typescript
+const tasksRepo = adapter.getRepo('tasks');
+
+// Push a small number of tasks that might not trigger an automatic upload.
+await tasksRepo?.push(finalTasks);
+
+// Manually upload any remaining tasks at the end of a process.
+await tasksRepo?.upload();
 ```
