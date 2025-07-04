@@ -208,7 +208,7 @@ if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
 fi
 
 # Start the snap-in in the background and redirect output to a log file
-npm run test:server > app.log 2>&1 &
+npm run test:server -- local > app.log 2>&1 &
 
 # Capture the process ID of the npm start command
 SNAP_IN_PID=$!

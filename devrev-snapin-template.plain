@@ -46,9 +46,9 @@
 
 - The Conformance Tests should spin a server at http://localhost:8002 for testing callbacks (The Callback Server).
 
-- Worker data server runs at http://localhost:8003/external-worker and therefore there is no need to mock this server nor it receives any interesting data.
+- The DevRev Server runs at http://localhost:8003, so it must not be mocked.
 
-- DevRev server runs at http://localhost:8003 and therefore there is no need to mock this nor it receives any interesting data.
+- The Worker Data Server is part of The DevRev Server and is accessible at http://localhost:8003/external-worker, so it must not be mocked.
 
 
 # The TypeScript Node.js application boilerplate
