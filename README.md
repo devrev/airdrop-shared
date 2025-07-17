@@ -34,9 +34,9 @@ Your snap-in project directory must be a sibling to a clone of this `airdrop-sha
 
 #### Chef CLI
 
-Download the `chef-cli` binary (version `0.7.2` or newer) and place it in a known location on your local machine. Don't forget to make it executable.
+Download the newest version of `chef-cli` binary and place it in a known location on your local machine. Don't forget to make it executable.
 
-  - **Download from:** [devrev/adaas-chef-cli Releases](https://github.com/devrev/adaas-chef-cli/releases)
+  - **Installation guide:** [Install Chef CLI](https://github.com/devrev/adaas-chef-cli/blob/main/README.md)
 
 #### Codeplain Client
 
@@ -180,6 +180,8 @@ This repository contains the following shared components:
       - `jest.setup.js`, `mock_callback_server.py`: Helper files required by the unit test and conformance test scripts.
 
 ### How to Override Shared Files
+
+You may want to use your own custom specification or test files instead of the ones given in the `airdrop-shared` repository - for example if you'd like to write your own `devrev-snapin-template.plain`.
 
 Your local snap-in repository can override any file from this shared repository. Files in your snap-in's project directory always take precedence.
 
