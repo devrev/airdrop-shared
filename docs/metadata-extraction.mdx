@@ -1,0 +1,88 @@
+  ### Configure state transitions
+
+  If an external record type has some concept of states, between which only certain transitions are 
+  possible (for example, to move to the `resolved` status, an issue first has to be `in_testing`), you 
+  can declare these in the metadata too.
+
+  This allows creation of a matching *stage diagram* (a collection of stages and their permitted 
+  transitions) in DevRev, which enables a much simpler import and a closer preservation of the external 
+  data than mapping to DevRev's built-in stages.
+
+  To declare this in the metadata, make sure the status is represented as an enum field, and then 
+  declare the allowed transitions (which you might have to retrieve from an API at runtime, if they 
+  are also customized):
+
+  ```json
+  {
+    "fields": {
+      "status": {
+        "name": "Status",
+        "is_required": true,
+        "type": "enum",
+        "enum": {
+          "values": [
+            {
+              "key": "detected",
+              "name": "Detected"
+            },
+            {
+              "key": "mitigated",
+              "name": "Mitigated"
+            },
+            {
+              "key": "rca_ready",
+              "name": "RCA Ready"
+            },
+            {
+              "key": "archived",
+              "name": "Archived"
+            }
+          ]
+        }
+      }
+    },
+    "stage_diagram": {
+      "controlling_field": "status",
+      "starting_stage": "detected",
+      "all_transitions_allowed": false,
+      "stages": {
+        "detected": {
+          "transitions_to": ["mitigated", "archived", "rca_ready"],
+          "state": "new"
+        },
+        "mitigated": {
+          "transitions_to": ["archived", "detected"],
+          "state": "work_in_progress"
+        },
+        "rca_ready": {
+          "transitions_to": ["archived"],
+          "state": "work_in_progress"
+        },
+        "archived": {
+          "transitions_to": [],
+          "state": "completed"
+        }
+      },
+      "states": {
+        "new": {
+          "name": "New"
+        },
+        "work_in_progress": {
+          "name": "Work in Progress"
+        },
+        "completed": {
+          "name": "Completed",
+          "is_end_state": true
+        }
+      }
+    }
+  }
+  ```
+
+  In the above example:
+  - The status field is the controlling field of the stage diagram.
+  - If a status field has no explicit transitions but you still want a stage diagram, set `all_transitions_allowed` to `true`, which creates a diagram where all the defined stages can transition to each other.
+  - External systems may categorize statuses (like Jira's status categories), which can be included in the diagram metadata (`states` in the example).
+  - The `starting_stage` defines the initial stage for new object instances. This data should always be provided if available, otherwise the starting stage is selected alphabetically.
+  - The order and human-readable name are taken from the enum values defined on the controlling field.
+  - If the `states` field is not provided, default DevRev states are used: `open`, `in_progress`, and `closed`.

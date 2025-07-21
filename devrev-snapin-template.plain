@@ -3,6 +3,7 @@
 - The Snap-In is a TypeScript Node.js application.
 
 - The Function implements part of The Snap-In functionality.
+  - Details on how The Function must be invoked are provided in the resource [Function Invocation](docs/function_invocation.mdx).
 
 - The Airdrop SDK Library for TypeScript helps developers build snap-ins that integrate with DevRev’s Airdrop platform.
   - The documentation for the The Airdrop SDK Library is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
