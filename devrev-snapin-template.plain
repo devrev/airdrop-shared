@@ -35,13 +35,13 @@
 
 ***Test Requirements:***
 
-- The Conformance Tests of The Snap-In should be implemented in TypeScript.
+- The Conformance Tests of The Snap-In should be implemented in TypeScript with target language version es2017. The Conformance Tests should utilize the TypeScript target language version es2017 with configuration settings for module interoperability, strict type checking, declaration file generation, and JSON module support.
 
 - The Conformance Tests must be in the top folder.
 
 - The Conformance Tests will run on Node.js as the runtime environment.
 
-- The Conformance Tests will be executed using the "npm test" command.
+- The Conformance Tests will be executed using the "npm test" command. The command "npm test" should be accessible in the `package.json` file of The Conformance Tests.
 
 - The Conformance Tests must complete within 120 seconds (The Conformance Tests Timeout). If The Conformance Tests Timeout elapses, the process executing The Conformance Tests will be terminated.
 
@@ -54,6 +54,8 @@
 - The DevRev Server runs at http://localhost:8003, so it must not be mocked.
 
 - The Worker Data Server is part of The DevRev Server and is accessible at http://localhost:8003/external-worker, so it must not be mocked.
+
+- The `jest.setup.js` file is managed externally and cannot be modified within The Conformance Tests.
 
 
 # The TypeScript Node.js application boilerplate
