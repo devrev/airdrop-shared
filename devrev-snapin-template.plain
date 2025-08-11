@@ -4,6 +4,7 @@
 
 - The Function implements part of The Snap-In functionality.
   - Details on how The Function must be invoked are provided in the resource [Function Invocation](docs/function_invocation.mdx).
+  - The Function should only take the first event from the array of events and process it. The Function can be invoked multiple times for multiple events.
 
 - The Airdrop SDK Library for TypeScript helps developers build snap-ins that integrate with DevRev’s Airdrop platform.
   - The documentation for the The Airdrop SDK Library is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
@@ -13,6 +14,12 @@
 
 - The Initial Domain Mapping is a JSON object that defines how the logical domain model described by The External Domain Metadata maps to the target domain model in DevRev. It specifies the correspondence between each external record type and DevRev leaf type, as well as the mapping of individual fields, including transformation logic, value conversions, and any fixed or default values.
 
+- The External Sync Unit Item Count is a numeric field representing the total number of items (such as cards) contained within a given external sync unit (e.g., a Trello board). It is accessible as "item_count" field of the external sync unit.
+
+- The Normalization Function is a function that is responsible for normalizing the data from The API to the data expected by The External Domain Metadata JSON object's record type.
+
+- The Extraction Function is The Function named "extraction". It is responsible for pushing data to the DevRev servers (The DevRev Servers) based on various event types.
+  - "event_type" equals "EXTRACTION_DATA_START" or "event_type" equals "EXTRACTION_DATA_CONTINUE" and we get a timeout, The Worker Thread should emit event "EXTRACTION_DATA_PROGRESS".
 
 ***Non-Functional Requirements:***
 
@@ -21,8 +28,6 @@
 - The Snap-In will run on Node.js as the runtime environment.
 
 - The Snap-In should use The Airdrop SDK Library version "1.5.1" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
-  - Please note that 'processTask' function **only** executes task if 'processTask' function is called from a worker thread. Therefore 'processTask' function should be called from a worker thread spawned using 'Spawn' class.
-  - If the worker is written in TypeScript, it must be referenced with a .ts extension, not .js.
 
 - Use snake_case for JSON keys.
 
@@ -31,6 +36,8 @@
 - The code of The Function (including tests) should be in a subfolder at the path `src/functions`. The folder name should correspond to the function name.
 
 - The shared code (including libraries, utilities, adapters, and other common code) used by multiple The Function should be placed in the `src/core` folder. The code in this folder should not depend on any specific The Function implementation.
+
+- During the data extraction phase, The Normalization Function's "data" field for specific record type should map precisely the fields that are present in The External Domain Metadata JSON object for that record type. The Normalization Function should map no additional fields other than those specified in The External Domain Metadata JSON object, and also no object fields from The External Domain Metadata JSON should be omitted in normalization.
 
 
 ***Test Requirements:***
@@ -57,28 +64,34 @@
 
 - The `jest.setup.js` file is managed externally and cannot be modified within The Conformance Tests.
 
+- All test files from The Conformance Tests must use the `.test.ts` suffix to be discoverable by Jest's default test pattern matching.
+
+- The Conformance Tests should send a single event to the Snap-In Server in the request body without wrapping it in an array.
+
 
 # The TypeScript Node.js application boilerplate
+
+***Non-Functional Requirements:***
+
+- Logic of pushing data to The DevRev Servers must be implemented in the worker thread and invoked with the "spawn" method from The Airdrop SDK Library.
+
+- The Function being implemented should *MUST not* be called "extraction" or "loading".
 
 ***Functional Requirements:***
 
 - Implement The Function that only checks if The Function can be invoked.
 
-- Implement The Function that only checks if the data extraction workflow can be invoked.
-
-  ***Acceptance Tests:***
-
-  - Test the data extraction workflow invocation using the resource [extraction_health_check.json](test_data/extraction_health_check.json).
-
-- Implement The Function that checks if pushing data works. The URL where data is to be pushed is provided in the "callback_url" field of the "event_context" dictionary which is part of "payload" dictionary.
-
-- Implement The Function that provides a test of the 'external sync units' part of the extraction workflow. The name of The Function must be 'extraction_external_sync_unit_check'.
+- Implement The Function called "test_external_sync_units" that provides a test of the 'external sync units' part of the extraction workflow as described in the resource [external-sync-units-extraction.mdx](docs/external-sync-units-extraction.mdx). Only check if the extraction can be triggered and that it successfully completes. Disregard all other details.
 
   ***Acceptance Tests:***
 
   - Test The Function using the resource [external_sync_unit_check.json](test_data/external_sync_unit_check.json). Test is successful if The Callback Server receives from DevRev an event with "event_type" that equals "EXTRACTION_EXTERNAL_SYNC_UNITS_DONE". The test must not send the event directly to The Callback Server.
 
-- Implement The Function that provides a test of the 'data extraction' part of the extraction workflow as described in the resource [data-extraction.md](docs/data-extraction.md). Only check if data extraction can be triggered and that it successfully completes. Disregard all other details. The name of The Function must be 'data_extraction_check'.
+- Implement The Function called "data_extraction_check" (The Data Extraction Check Function) that provides a test of the 'data extraction' part of the extraction workflow as described in the resource [data-extraction.md](docs/data-extraction.md). The Data Extraction Check Function should:
+  - Initialize a single repo "users"
+  - normalize the users data using The Normalization Function
+  - push the normalized users data to The DevRev Servers
+  - Note: The Data Extraction Check Function should be simplified and should disregard all other details.
 
   ***Acceptance Tests:***
   
