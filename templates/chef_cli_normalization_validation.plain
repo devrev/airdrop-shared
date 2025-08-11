@@ -1,5 +1,3 @@
-  - Validate The Normalization Function with the chef-cli tool (The Chef CLI) for the "{{ record_type }}" record type:
-    - Firstly, invoke The Extraction Function using the resource [data_extraction_test.json](test_data/data_extraction_test.json). Make sure to replace placeholders in the resource with The Trello API Key, The Trello OAuth Token, and The Organization ID.
     - Then, validate The Normalization Function with the chef-cli tool (The Chef CLI) using the command "chef-cli validate-data -m <The External Domain Metadata JSON object file> -r {{ record_type }}":
       - To invoke the function that returns The External Domain Metadata JSON object, send the event [external_domain_metadata_event_payload.json](test_data/external_domain_metadata_event_payload.json) to The Snap-In server.
       - The External Domain Metadata JSON object should then be stored in temporary file and provided as path to the validation of The Normalization Function.
