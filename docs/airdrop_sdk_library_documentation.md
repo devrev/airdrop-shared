@@ -363,9 +363,8 @@ Defines the structure of events sent to external extractors from Airdrop platfor
   Required. An object containing:
 
   - _secrets_: An object containing:
-    - _service_account_token_: Required. A **string** representing the DevRev authentication token for Airdrop platform
-  - _snap_in_version_id_: Required. A **string** representing the version ID of the snap-in
-  - _snap_in_id_: Required. A **string** representing the snap-in ID.
+    - _service_account_token_: A **string** representing the DevRev authentication token for Airdrop platform
+  - _snap_in_version_id_: A **string** representing the version ID of the snap-in
 
 - _payload_
 
