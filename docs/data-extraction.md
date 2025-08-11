@@ -21,8 +21,9 @@ Airdrop initiates data extraction by starting the snap-in with a message with ev
 During the data extraction phase, the snap-in extracts data from an external system,
 prepares batches of data and uploads them in the form of artifacts (files) to DevRev.
 
-The snap-in must respond to Airdrop with a message with event type of `EXTRACTION_DATA_PROGRESS`,
+If there's timeout, the snap-in must respond to Airdrop with a message with event type of `EXTRACTION_DATA_PROGRESS`,
 together with an optional progress estimate when the maximum Airdrop snap-in runtime (13 minutes) has been reached.
+"progress" is the only information emitted in the `EXTRACTION_DATA_PROGRESS` event. 
 
 If the extraction has been rate-limited by the external system and back-off is required, the snap-in
 must respond to Airdrop with a message with event type `EXTRACTION_DATA_DELAY` and specifying
@@ -112,7 +113,6 @@ Behind the scenes, the SDK library stores items pushed to the repository and upl
 ### Data normalization
 
 Extracted data must be normalized to fit the domain metadata defined in the `external-domain-metadata.json` file. 
-More details on this process are provided in the [Metadata extraction](/public/snapin-development/adaas/metadata-extraction) section.
 
 Normalization rules:
 
@@ -124,6 +124,7 @@ Normalization rules:
 - References: references must be strings, not numbers or objects.
 - Number fields must be valid JSON numbers (not strings).
 - Multiselect fields must be provided as an array (not CSV).
+- Rich text: Strings from 3rd party services should be converted to the rich text by splitting the string by newlines, filtering out empty lines, and returning an array of strings.
 
 Extracted items are automatically normalized when pushed to the `repo` if a normalization function is provided under the `normalize` key in the repo object.
 
