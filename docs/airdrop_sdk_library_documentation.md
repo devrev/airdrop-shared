@@ -425,7 +425,7 @@ This function initializes a new worker thread and oversees its lifecycle. It sho
 #### Usage
 
 ```typescript
-spawn({ event, initialState, workerPath, options });
+spawn({ event, initialState, workerPath, options, initialDomainMapping });
 ```
 
 #### Parameters
@@ -442,6 +442,10 @@ spawn({ event, initialState, workerPath, options });
 
   Required. A **string** that represents the path to the worker file.
 
+- _initialDomainMapping_
+
+  Optional. A **string** containing the initial domain mapping.
+
 - _options_
 
   Optional. An object of type **WorkerAdapterOptions**, which will be passed to the newly created worker. This worker will then initialize a `WorkerAdapter` by invoking the `processTask` function. The options include:
@@ -457,10 +461,6 @@ spawn({ event, initialState, workerPath, options });
   - `batchSize`
 
     A **number** that determines the maximum number of items to be processed and saved to an intermediary file before being sent to the Airdrop platform. The default batch size is 2,000.
-  
-  - `initialDomainMapping`
-
-    Optional. A **string** containing the initial domain mapping.
 
 #### Return value
 
