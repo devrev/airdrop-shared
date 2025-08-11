@@ -5,9 +5,39 @@ NPM_INSTALL_OUTPUT_FILTER="up to date in|added [0-9]* packages, removed [0-9]* p
 # ANSI escape code pattern to remove color codes and formatting from output
 ANSI_ESCAPE_PATTERN="s/\x1b\[[0-9;]*[mK]//g"
 
+# Maximum number of characters to display from log files
+SNAP_IN_LOG_MAX_CHARS=8000
+DEVREV_SERVER_LOG_MAX_CHARS=4000
+
+# Function to print a log file, truncating it if it's too large
+print_log_file() {
+    local file_path="$1"
+    local max_chars="$2"
+    if [ ! -f "$file_path" ]; then
+        printf "Log file not found: %s\n" "$file_path"
+        return
+    fi
+
+    local total_chars=$(wc -c < "$file_path")
+
+    if [ "$total_chars" -le "$max_chars" ]; then
+        cat "$file_path"
+    else
+        # Truncate the file, showing 85% from the start and 15% from the end
+        local start_chars=$((max_chars * 85 / 100))
+        local end_chars=$((max_chars * 15 / 100))
+        local omitted_chars=$((total_chars - start_chars - end_chars))
+
+        head -c "$start_chars" "$file_path"
+        printf "\n\n... [%s characters omitted] ...\n\n" "$omitted_chars"
+        tail -c "$end_chars" "$file_path"
+    fi
+}
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Get the directory from where the script is being executed
 EXEC_DIR="$(pwd)"
+MOCK_DEVREV_SERVER_LOG="$EXEC_DIR/devrev_server.log"
 
 # Source environment variables from .env file - look in execution directory
 if [ ! -f "$EXEC_DIR/.env" ]; then
@@ -52,8 +82,7 @@ get_children() {
 
 # Function to start the mock DevRev server
 start_mock_devrev_server() {
-    printf "Starting mock DevRev server...\n"
-    python3 "$SCRIPT_DIR/mock_devrev_server.py" 2>&1 &
+    python3 "$SCRIPT_DIR/mock_devrev_server.py" > "$MOCK_DEVREV_SERVER_LOG" 2>&1 &
     MOCK_SERVER_PID=$!
     sleep 2  # Give the server time to start
     printf "\n"
@@ -96,6 +125,7 @@ cleanup() {
 
     # Remove temporary files if they exist
     [ -f "$build_output" ] && rm "$build_output" 2>/dev/null
+    [ -f "$MOCK_DEVREV_SERVER_LOG" ] && rm "$MOCK_DEVREV_SERVER_LOG" 2>/dev/null
 }
 
 # Set up trap to call cleanup function on script exit, interrupt, or termination
@@ -119,6 +149,12 @@ if [ -z "$CHEF_CLI_PATH" ] || [ ! -f "$CHEF_CLI_PATH" ] || [ ! -x "$CHEF_CLI_PAT
 
     exit 69 # EXIT_SERVICE_UNAVAILABLE
 fi
+
+if [ -z "$EXTRACTED_FILES_FOLDER_PATH" ]; then
+    echo "Error: extracted files folder not found at EXTRACTED_FILES_FOLDER_PATH. Please ensure EXTRACTED_FILES_FOLDER_PATH is set."
+    exit 69 # EXIT_SERVICE_UNAVAILABLE
+fi
+
 
 # Check if build folder name is provided
 if [ -z "$1" ]; then
@@ -272,20 +308,21 @@ if [ $? -ne 0 ]; then
   exit 2
 fi
 
-if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
-  printf "Running conformance tests...\n"
-fi
+printf "\n#### Running conformance tests...\n"
 
 npm test -- --runInBand --setupFilesAfterEnv="$SCRIPT_DIR/jest.setup.js" --detectOpenHandles 2>&1 | sed -E "$ANSI_ESCAPE_PATTERN"
 conformance_tests_result=$?
+
+printf "\n#### Output of the DevRev server log file:\n\n"
+print_log_file "$MOCK_DEVREV_SERVER_LOG" "$DEVREV_SERVER_LOG_MAX_CHARS"
+printf "\n#### Output of The Snap-In log file:\n"
+print_log_file "$NODE_SUBFOLDER/app.log" "$SNAP_IN_LOG_MAX_CHARS"
+printf "\n"
+printf "\n"
 
 if [ $conformance_tests_result -ne 0 ]; then
   if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
     printf "Error: Conformance tests have failed.\n"
   fi
-  printf "\n### Output of the The Snap-In log file:\n"
-  cat "$current_dir/$NODE_SUBFOLDER/app.log"
-  printf "\n"
-
   exit 2
 fi
