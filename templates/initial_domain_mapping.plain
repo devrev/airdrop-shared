@@ -1,0 +1,40 @@
+***Definitions:***
+
+- The structure of The Initial Domain Mapping JSON object is specified by the JSON schema defined in the resource [initial_mappings_schema.yaml](initial_mappings_schema.yaml).
+  - For a complete list of supported DevRev object types and their fields, see resource [Supported DevRev object types for Airdrop](docs/supported-object-types.md).
+  - For information about transformation methods, see resource [Mapping Reasons](docs/mapping-reasons.mdx).
+  - When working with devrev_leaf_type, be aware that the schema expects different formats depending on context. In most places, it should be passed as an object with object_category and object_type. However, in the airdrop-recipe-create-possible-record-type-mapping context, it must be a string representing only the object_type.
+  - Please note that mappings are split into separate ‘shards’ - one for each record type - for easier manipulation and storage.
+  - Please note that a leaf type or a concrete id has to be selected for use_devrev_record, but not both.
+
+- The Stock Field Mapping Field is a configuration object within the Initial Domain Mapping JSON structure that defines how external system data fields are mapped to DevRev's built-in (stock) fields. It is located within the "stock_field_mappings" object inside a blueprint shard configuration.
+
+- The Fixed Transformation Method is a transformation method that is used to set a fixed value to a field. To apply The Fixed Transformation Method to The Stock Field Mapping Field, set the Metadata extraction transformation method type to "use_fixed_value". If using The Fixed Transformation Method, the value of the field "transformation_method_for_set" inside The Stock Field Mapping Field should be `{"enum": "<value>", "transformation_method": "use_fixed_value", "value": "enum_value"}`, where `<value>` is the fixed value.
+
+- The External Transformation Method is a transformation method that is used to map an external field to a DevRev stock field. To apply The External Transformation Method to The Stock Field Mapping Field, set the Metadata extraction transformation method type to "use_directly", "use_as_array_value", "use_rich_text", depending on the context. Field "primary_external_field" should be set to the name of the external field to map.
+
+- The DevRev Record Transformation Method is a transformation method that is used enable use of a fixed reference to something in DevRev. To apply The DevRev Record Transformation Method to The Stock Field Mapping Field, set the Metadata extraction transformation method type to "use_devrev_record".
+
+***Non-Functional Requirements:***
+
+- Store The Initial Domain Mapping JSON object as a separate JSON file.
+
+- The External Domain Metadata JSON object should not be modified. If there are discrepancies between The External Domain Metadata JSON object and The Initial Domain Mapping JSON object, assume The External Domain Metadata JSON object is correct and The Initial Domain Mapping JSON object needs to be adjusted.
+
+***Test Requirements:***
+
+- Validate generated The Initial Domain Mapping JSON object with the chef-cli tool (The Chef CLI) using the command "chef-cli initial-mapping check -m <The External Domain Metadata JSON object file>":
+  - The Chef CLI reads The Initial Domain Mapping JSON object from stdin.
+  - For return type of The Chef CLI to stdout, see resource [chef_cli_output_schema.json](resources/chef_cli_output_schema.json). Fields "RemainingDeficiencies" and "Warnings" contains information about the deficiencies that need to be resolved for the validation to pass.
+  - The path to The Chef CLI executable is provided in the environment variables `CHEF_CLI_PATH`.
+  - The test should always fail if we get an empty output.
+  - The test must fail unless both of the fields "RemainingDeficiencies" and "Warnings" of the first object in the Chef CLI output array are present and both of their values are exactly null.
+  - The test should always fail if The Chef CLI is not available.
+
+- The Initial Domain Mapping JSON object should always be read from The Implementation Code.
+
+- If validating The Initial Domain Mapping JSON object with The Chef CLI, print the stdout and stderr of The Chef CLI to the console.
+
+- If The Conformance Tests test The Initial Domain Mapping JSON object, test it only against The Chef CLI. Don't test it against the literal JSON contents of The Initial Domain Mapping JSON object.
+
+- The Conformance Tests should not modify nor do any transformations on The Initial Domain Mapping JSON object at all. If The Conformance Tests indicates a problem with The Initial Domain Mapping JSON object, The Initial Domain Mapping JSON object in The Implementation Code should be adjusted to fix the problem. The tests should only validate the JSON object in its original form.
