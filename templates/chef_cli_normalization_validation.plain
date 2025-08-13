@@ -6,5 +6,5 @@
       - Please note that the expected behaviour is that only after the invocation of The Extraction Function, the folder provided in the environment variable "EXTRACTED_FILES_FOLDER_PATH" should exist. The test should always fail if before the execution of The Chef CLI, the folder "EXTRACTED_FILES_FOLDER_PATH" does not exist or if The Extracted File is not found.
       - The path to The Chef CLI executable is provided in the environment variable `CHEF_CLI_PATH`.
       - For the validation of The Normalization Function to be successful The Chef CLI must return an empty output. The implementation of The Extraction Function directly infuences the output of The Chef CLI.
-      - stdout and stderr of The Chef CLI be always printed to the console.
+      - The stdout and stderr of The Chef CLI *must* be printed to the console.
       - The test should always fail if The Chef CLI is not available.

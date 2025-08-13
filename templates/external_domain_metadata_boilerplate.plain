@@ -19,6 +19,6 @@
 
 - If The Conformance Tests test The External Domain Metadata JSON object, test it only against The Chef CLI. Don't test it against the literal JSON contents of The External Domain Metadata JSON object.
 
-- If validating The External Domain Metadata JSON object with The Chef CLI, print the stdout and stderr of The Chef CLI to the console.
+- The stdout and stderr of The Chef CLI *must* be printed to the console.
 
 - The Conformance Tests should not modify nor do any transformations on The External Domain Metadata JSON object at all. If The Conformance Tests indicates a problem with The External Domain Metadata JSON object, The External Domain Metadata JSON object in The Implementation Code should be adjusted to fix the problem. The tests should only validate the JSON object in its original form.

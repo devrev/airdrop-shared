@@ -33,7 +33,7 @@
 
 - The Initial Domain Mapping JSON object should always be read from The Implementation Code.
 
-- If validating The Initial Domain Mapping JSON object with The Chef CLI, print the stdout and stderr of The Chef CLI to the console.
+- The stdout and stderr of The Chef CLI *must* be printed to the console.
 
 - If The Conformance Tests test The Initial Domain Mapping JSON object, test it only against The Chef CLI. Don't test it against the literal JSON contents of The Initial Domain Mapping JSON object.
 

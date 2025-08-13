@@ -1,0 +1,8 @@
+- All operations accessing external services or data providers must be implemented in worker thread (The Worker Thread). The Worker Thread should be initialized with the method "spawn" (The Spawn Method). The Spawn Method should be initialized with the following parameters:
+  - The Extraction Function should start The Worker Thread with timeout of 10 minutes.
+  - "isLocalDevelopment" *must not* be set.
+  - "initialState" should be The Extraction State Object with all "completed" fields set to false, and all the rest of the fields in The Extraction State Object set to undefined, false, 0, or empty string, depending on the type of the field.
+  - Use The Initial Domain Mapping JSON object for initialDomainMapping parameter when spawning a new worker.
+  - Note: The Initial Domain Mapping JSON object should be read directly from the JSON file.
+  - Note: No additional fields should be added to The Extraction State Object.
+  - Note: The Worker Thread must be implemented in TypeScript and it should be referenced with a .ts extension, not .js.
