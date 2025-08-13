@@ -42,7 +42,7 @@ MOCK_DEVREV_SERVER_LOG="$EXEC_DIR/devrev_server.log"
 # Source environment variables from .env file - look in execution directory
 if [ ! -f "$EXEC_DIR/.env" ]; then
     printf "Error: .env file not found in $EXEC_DIR. Please ensure .env file exists with required environment variables.\n"
-    exit 1
+    exit 69  # EXIT_SERVICE_UNAVAILABLE
 fi
 
 set -a  # automatically export all variables
