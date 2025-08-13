@@ -14,10 +14,6 @@ Value of `adapter.state.lastSuccessfulSyncStarted` (of format ISO 8601 Extended 
 
 To retrieve only the resources from the API that have to be updated, filtering on The API should be implemented.
 
-#### Reset incremental mode
-
-Check for a `reset_extract_from` flag in `adapter.event.payload.event_context`. If true and an `extract_from` timestamp is provided, use that timestamp instead of `lastSuccessfulSyncStarted`. If no extract_from is provided, start from the beginning (no timestamp filter, no incremental sync).
-
 Note:
 - `adapter.state.lastSuccessfulSyncStarted` and `adapter.state.lastSyncStarted` are internal properties of the ts-adaas library, so no need to define it. This should be a read-only property.
 
