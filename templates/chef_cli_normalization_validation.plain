@@ -1,0 +1,10 @@
+    - Then, validate The Normalization Function with the chef-cli tool (The Chef CLI) using the command "chef-cli validate-data -m <The External Domain Metadata JSON object file> -r {{ record_type }}":
+      - To invoke the function that returns The External Domain Metadata JSON object, send the event [external_domain_metadata_event_payload.json](test_data/external_domain_metadata_event_payload.json) to The Snap-In server.
+      - The External Domain Metadata JSON object should then be stored in temporary file and provided as path to the validation of The Normalization Function.
+      - The Chef CLI reads the extracted file (The Extracted File) from stdin.
+      - The Extracted File is inside folder provided in the environment variable "EXTRACTED_FILES_FOLDER_PATH". To retrieve the relevant file name, command `ls EXTRACTED_FILES_FOLDER_PATH | grep extractor_{{ record_type }} | sort -r | head -n 1` should be executed. The test should always fail if The Extracted File is not present.
+      - Please note that the expected behaviour is that only after the invocation of The Extraction Function, the folder provided in the environment variable "EXTRACTED_FILES_FOLDER_PATH" should exist. The test should always fail if before the execution of The Chef CLI, the folder "EXTRACTED_FILES_FOLDER_PATH" does not exist or if The Extracted File is not found.
+      - The path to The Chef CLI executable is provided in the environment variable `CHEF_CLI_PATH`.
+      - For the validation of The Normalization Function to be successful The Chef CLI must return an empty output. The implementation of The Extraction Function directly infuences the output of The Chef CLI.
+      - The stdout and stderr of The Chef CLI *must* be printed to the console.
+      - The test should always fail if The Chef CLI is not available.

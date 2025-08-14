@@ -1,0 +1,26 @@
+***Definitions:***
+
+- The structure of The External Domain Metadata JSON object is specified by the JSON schema defined in the resource [external_domain_metadata_schema.json](external_domain_metadata_schema.json).
+  - Please note that all refers_to keys in reference and typed_reference fields must use the format "#record:<record_type_key>", where <record_type_key> matches a key in the top-level record_types. This ensures references are unambiguous and valid. Use {} as the value to refer by default identifier (id), or specify { "by_field": "field_name" } to use a custom key.
+
+- A “display name” is the human-readable label of a field within a given record type.
+
+***Non-Functional Requirements:***
+
+- Store The External Domain Metadata JSON object as a separate JSON file.
+
+***Test Requirements:***
+
+- Validate generated The External Domain Metadata JSON object with the chef-cli tool (The Chef CLI) using the command "chef-cli validate-metadata":
+  - This command reads JSON object from stdin.
+  - The path to The Chef CLI executable is provided in the environment variables `CHEF_CLI_PATH`.
+  - For the validation of The External Domain Metadata JSON object to be successful The Chef CLI must return an empty output.
+  - The test should always fail if The Chef CLI is not available.
+
+- The External Domain Metadata JSON object should always be read from The Implementation Code.
+
+- If The Conformance Tests test The External Domain Metadata JSON object, test it only against The Chef CLI. Don't test it against the literal JSON contents of The External Domain Metadata JSON object.
+
+- The stdout and stderr of The Chef CLI *must* be printed to the console.
+
+- The Conformance Tests should not modify nor do any transformations on The External Domain Metadata JSON object at all. If The Conformance Tests indicates a problem with The External Domain Metadata JSON object, The External Domain Metadata JSON object in The Implementation Code should be adjusted to fix the problem. The tests should only validate the JSON object in its original form.

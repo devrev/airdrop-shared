@@ -1,0 +1,63 @@
+An _external sync unit_ refers to a single unit in the external system that is being airdropped to DevRev.
+In some systems, this is a project; in some it is a repository; in support systems it could be
+called a brand or an organization.
+What a unit of data is called and what it represents depends on the external system's domain model.
+It usually combines contacts, users, work-like items, and comments into a unit of domain objects.
+
+In the external sync unit extraction phase, the snap-in is expected to obtain a list of external
+sync units that it can extract from the external system API and send it to Airdrop in its response.
+
+External sync unit extraction is executed only during the initial import.
+
+## Triggering event
+
+Airdrop starts the external sync unit extraction by sending a message with the event type `EXTRACTION_EXTERNAL_SYNC_UNITS_START`.
+
+The snap-in must reply to Airdrop with an `EXTRACTION_EXTERNAL_SYNC_UNITS_DONE` message when finished, 
+or `EXTRACTION_EXTERNAL_SYNC_UNITS_ERROR` if an error occurs.
+
+## Implementation
+
+
+The snap-in should emit the list of external sync units in the given format:
+
+```typescript
+const externalSyncUnits: ExternalSyncUnit[] = [
+  {
+    id: "devrev",
+    name: "devrev",
+    description: "Demo external sync unit",
+    item_count: 100,
+  },
+];
+```
+
+- `id`: The unique identifier in the external system.
+- `name`: The human-readable name in the external system.
+- `description`: The short description if the external system provides it.
+- `item_count`: The number of items (issues, tickets, comments or others) in the external system.
+  Item count should be provided if it can be obtained in a lightweight manner, such as by calling an API endpoint.
+  If there is no such way to get it (for example, if the items would need to be extracted to count them),
+  then the item count should be `-1` to avoid blocking the import with long-running queries.
+
+The snap-in must respond to Airdrop with a message, which contains a list of external sync units as a payload:
+
+```typescript
+await adapter.emit(ExtractorEventType.ExtractionExternalSyncUnitsDone, {
+  external_sync_units: externalSyncUnits,
+});
+```
+
+or an error:
+
+```typescript
+await adapter.emit(ExtractorEventType.ExtractionExternalSyncUnitsError, {
+  error: {
+    message: "Failed to extract external sync units. Lambda timeout.",
+  },
+});
+```
+
+**The snap-in must always emit a single message.**
+
+To test your changes, start a new airdrop in the DevRev App. If external sync units extraction is successful, you should be prompted to choose an external sync unit from the list.
