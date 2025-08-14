@@ -3,6 +3,8 @@
 - The structure of The External Domain Metadata JSON object is specified by the JSON schema defined in the resource [external_domain_metadata_schema.json](external_domain_metadata_schema.json).
   - Please note that all refers_to keys in reference and typed_reference fields must use the format "#record:<record_type_key>", where <record_type_key> matches a key in the top-level record_types. This ensures references are unambiguous and valid. Use {} as the value to refer by default identifier (id), or specify { "by_field": "field_name" } to use a custom key.
 
+- A “display name” is the human-readable label of a field within a given record type.
+
 ***Non-Functional Requirements:***
 
 - Store The External Domain Metadata JSON object as a separate JSON file.

@@ -15,6 +15,11 @@
 
 - The DevRev Record Transformation Method is a transformation method that is used enable use of a fixed reference to something in DevRev. To apply The DevRev Record Transformation Method to The Stock Field Mapping Field, set the Metadata extraction transformation method type to "use_devrev_record".
 
+- The Shard Mode Type is an option in The Initial Domain Mapping JSON object through which you can specify shard type for the mapping for the given record type.
+  - You can either create a fresh shard to use for this mapping, assign an existing one.
+
+- For every record type in The Initial Domain Mapping JSON object, The Shard Mode Type should be set to "create_shard".
+
 ***Non-Functional Requirements:***
 
 - Store The Initial Domain Mapping JSON object as a separate JSON file.
