@@ -75,7 +75,7 @@
 
 - Logic of pushing data to The DevRev Servers must be implemented in the worker thread and invoked with the "spawn" method from The Airdrop SDK Library.
 
-- The Function being implemented should *MUST not* be called "extraction" or "loading".
+- The Function being implemented *MUST not* be called "extraction" or "loading".
 
 ***Functional Requirements:***
 

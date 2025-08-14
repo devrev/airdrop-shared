@@ -104,18 +104,6 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
       resp.status(400).send(errMsg);
       return;
     }
-    
-    // Validate payload exists and is not empty
-    if (!event.payload || (typeof event.payload === 'object' && Object.keys(event.payload).length === 0)) {
-      let errMsg = 'Invalid request format: missing or empty payload';
-      error = {
-        err_type: RuntimeErrorType.InvalidRequest,
-        err_msg: errMsg,
-      } as RuntimeError;
-      console.error(error.err_msg);
-      resp.status(400).send(errMsg);
-      return;
-    }
     const functionName: FunctionFactoryType = event.execution_metadata.function_name as FunctionFactoryType;
     if (functionName === undefined) {
       error = {
