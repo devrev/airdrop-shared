@@ -21,7 +21,7 @@ Airdrop initiates data extraction by starting the snap-in with a message with ev
 During the data extraction phase, the snap-in extracts data from an external system,
 prepares batches of data and uploads them in the form of artifacts (files) to DevRev.
 
-If there's timeout, the snap-in must respond to Airdrop with a message with event type of `EXTRACTION_DATA_PROGRESS`,
+The snap-in must respond to Airdrop with a message with event type of `EXTRACTION_DATA_PROGRESS`,
 together with an optional progress estimate when the maximum Airdrop snap-in runtime (13 minutes) has been reached.
 
 If the extraction has been rate-limited by the external system and back-off is required, the snap-in
