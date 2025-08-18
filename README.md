@@ -21,7 +21,7 @@ Before you begin, ensure you have the following set up on your local machine.
 
 #### Folder Structure
 
-Your snap-in project directory must be a sibling to a clone of this `airdrop-shared` repository.
+Your snap-in project directory must be in the same root directory as `airdrop-shared` repository.
 
 ```sh
 # Your project layout should look like this
@@ -48,11 +48,11 @@ Clone the Codeplain client repository, which contains the code generation script
 
 In the root of your new snap-in project directory, create and configure the following files.
 
-  - **`manifest.yaml`**
+  - **`manifest.yaml`**:
     This file defines your snap-in's metadata. It is **not** generated automatically. You must create one tailored to your snap-in's needs. For guidance, refer to the [DevRev manifest documentation](https://developer.devrev.ai/public/airdrop/manifest).
 
-  - **`config.yaml`**
-    This file configures the code generation process. You must include paths pointing to the cloned `airdrop-shared` repository. Other fields can be adjusted to assist with rendering.
+  - **`config.yaml`**:
+    This file configures the code generation process. You must include paths pointing to the cloned `airdrop-shared` repository. Other fields can be adjusted to assist with code generation (rendering).
 
     *Example `config.yaml`:*
 
@@ -68,7 +68,7 @@ In the root of your new snap-in project directory, create and configure the foll
     # render-range: 2.3.1,2.3.2
     ```
 
-  - **`.env`**
+  - **`.env`**:
     Create a `.env` file to store sensitive information and local paths. At a minimum, it must contain the absolute path to the `chef-cli` binary. Add any other variables, such as API credentials, that your project requires.
 
     *Example `.env` for a Wrike snap-in:*
@@ -81,12 +81,12 @@ In the root of your new snap-in project directory, create and configure the foll
     CHEF_CLI_PATH=/Users/yourname/path/to/chef-cli
     ```
 
-  - **`devrev-<external-system>-snapin.plain`**
-    This is the core specification file for your snap-in. It is highly recommended to copy the `.plain` file from an existing snap-in (like Trello or Wrike) and modify it. Start with a minimal set of functional requirements and expand as you go.
+  - **`devrev-<external-system>-snapin.plain`**:
+    This is the core specification file for your snap-in. It is highly recommended to copy the `.plain` file from an existing snap-in (like [Trello](https://github.com/devrev/airdrop-trello-snap-in) or [Wrike](https://github.com/devrev/airdrop-wrike-snap-in)) and modify it. Start with a minimal set of functional requirements and expand as you go.
 
       - Learn more about the specification language: [Plain Language Specification Guide](https://github.com/Codeplain-ai/plain2code_client/blob/main/Plain-language-specification.md)
 
-  - **`test_data/`** (Folder)
+  - **`test_data/`**:
     Create this folder to store JSON data files that your Acceptance tests will use.
 
 ### 3\. Running Code Generation
