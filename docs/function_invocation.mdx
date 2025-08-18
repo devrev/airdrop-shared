@@ -1,9 +1,9 @@
-The function is invoked by the runner.ts file.
-
-runner.ts processes events of type "any", which are basically events of type "AirdropEvent" with some additional fields, and passes the events to the function. You can ignore the additional fields.
+A function can be invoked synchronously or asynchronously.
 
 You need to implement the run method in your function. The run method is called when the function is invoked. The run method signature is defined below:
+
 ```typescript
-async function run(events: []AirdropEvent): void;
+async function run(events: []FunctionInput): any;
 ```
-As of now, it's safe to assume that only one event is passed to the function at a time. The function can be invoked multiple times for multiple events.
+
+The value returned from the `run` method is passed back in synchronous execution modes, such as commands, snap kit actions, and event source synchronous execution. In asynchronous execution modes, such as automation execution, the return value is ignored.

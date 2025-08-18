@@ -26,9 +26,9 @@ class ExternalWorkerResponse(BaseModel):
 class AirdropArtifactResponse(BaseModel):
     artifact_id: str
     upload_url: str
-    form_data: List[FormDataField]
+    form_data: Dict[str, str]
 
-@app.post("/upload/{artifact_id}")
+@app.post("/upload/{artifact_id:path}")
 async def upload_artifact(
     artifact_id: str,
     request: Request,
@@ -125,17 +125,28 @@ async def airdrop_artifacts_upload_url(
     upload_url = f"http://localhost:8003/upload/{artifact_id}"
     
     # Create form data fields that would typically be required for S3 upload
-    form_data = [
-        FormDataField(key="key", value=f"airdrop-artifacts/{artifact_id}/{file_name}"),
-        FormDataField(key="Content-Type", value=file_type),
-        FormDataField(key="x-amz-meta-artifact-id", value=artifact_id),
-    ]
+    form_data = {
+        "key": f"airdrop-artifacts/{artifact_id}/{file_name}",
+        "Content-Type": file_type,
+        "x-amz-meta-artifact-id": artifact_id,
+    }
     
     return AirdropArtifactResponse(
         artifact_id=artifact_id,
         upload_url=upload_url,
         form_data=form_data
     )
+
+@app.post("/internal/airdrop.artifacts.confirm-upload")
+async def confirm_upload(request: Request):
+    try:
+        body = await request.json()
+        print("Received /internal/airdrop.artifacts.confirm-upload POST body:")
+        print(json.dumps(body, indent=2))
+    except Exception as e:
+        print("Could not parse JSON from /internal/airdrop.artifacts.confirm-upload request body:", e)
+
+    return {"status": "success"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "IfUserDecides": {
+        "type": "object",
+        "description": "Object containing user decision parameters"
+      },
+      "Outcome": {
+        "type": "string",
+        "description": "Description of the operation outcome"
+      },
+      "Warnings": {
+        "type": ["array", "null", "string"],
+        "items": {},
+        "description": "Array of warning messages, or null if no warnings"
+      },
+      "RemainingDeficiencies": {
+        "type": ["array", "null"],
+        "items": {},
+        "description": "Array of any type, or null if none"
+      }
+    },
+    "additionalProperties": false
+  },
+  "description": "Loosened schema for chef CLI output containing operation results"
+} 
