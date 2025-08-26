@@ -444,7 +444,7 @@ spawn({ event, initialState, workerPath, options, initialDomainMapping });
 
 - _initialDomainMapping_
 
-  Optional. An **object** containing the initial domain mapping.
+  Required. An **object** containing the initial domain mapping.
 
 - _options_
 

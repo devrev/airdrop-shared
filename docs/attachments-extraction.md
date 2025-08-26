@@ -83,7 +83,6 @@ processTask({
     }
   },
   onTimeout: async ({ adapter }) => {
-    await adapter.postState();
     await adapter.emit(ExtractorEventType.ExtractionAttachmentsProgress, {
       progress: 50,
     });
