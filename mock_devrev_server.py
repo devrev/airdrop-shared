@@ -4,8 +4,13 @@ from typing import Optional, List, Dict
 import uuid
 import json
 import random
+import copy
 
 app = FastAPI()
+
+# Initialize application state containers
+app.state.uploaded_states = {}
+app.state.uploaded_artifacts = set()
 
 class ArtifactPrepareRequest(BaseModel):
     file_name: str
@@ -28,6 +33,13 @@ class AirdropArtifactResponse(BaseModel):
     upload_url: str
     form_data: Dict[str, str]
 
+@app.get("/is_uploaded/{artifact_id:path}")
+async def was_artifact_uploaded(artifact_id: str):
+    """Check if an artifact with the given artifact_id was uploaded"""
+    if artifact_id in app.state.uploaded_artifacts:
+        return {"artifact_id": artifact_id, "uploaded": True}
+    raise HTTPException(status_code=404, detail="Artifact not found")
+
 @app.post("/upload/{artifact_id:path}")
 async def upload_artifact(
     artifact_id: str,
@@ -40,6 +52,9 @@ async def upload_artifact(
         print(f"Received file upload with ID: {artifact_id}")
         print(f"Content length: {len(content)}")
         print(f"Content type: {request.headers.get('content-type', 'unknown')}")
+        
+        # Remember that this artifact_id was uploaded
+        app.state.uploaded_artifacts.add(artifact_id)
         
         return {"status": "success", "message": "File uploaded successfully"}
     except Exception as e:
@@ -70,9 +85,11 @@ async def prepare_artifact(
     )
 
 @app.get("/external-worker.get", response_model=ExternalWorkerResponse)
-async def get_external_worker():
-    print("Received /external-worker.get GET body:")
-    state = {
+async def get_external_worker(sync_unit: str):
+    print(f"Received /external-worker.get GET request for sync_unit: {sync_unit}")
+    
+    # Default state
+    default_state = {
         "lastSyncStarted": "2024-06-01T12:00:00Z",
         "toDevRev": {
             "attachmentsMetadata": {
@@ -89,14 +106,24 @@ async def get_external_worker():
             "offset": 0
         }
     }
-    return ExternalWorkerResponse(state=json.dumps(state))
+
+    # Check if uploaded_states contains the specific sync_unit
+    if sync_unit in app.state.uploaded_states:
+        print(f"Found uploaded state for sync_unit: {sync_unit}")
+        return ExternalWorkerResponse(state=json.dumps(app.state.uploaded_states[sync_unit]))
+    else:
+        print(f"No uploaded state found for sync_unit: {sync_unit}, returning default state")
+        return ExternalWorkerResponse(state=json.dumps(default_state))
 
 @app.post("/external-worker.update")
-async def update_external_worker(request: Request):
+async def update_external_worker(sync_unit: str, request: Request):
     body = await request.body()
-    print("Received /external-worker.update POST body:")
+    print(f"Received /external-worker.update POST request for sync_unit: {sync_unit}")
     try:
         parsed = json.loads(body.decode("utf-8"))
+        # Store the uploaded state under the specific sync_unit key
+        app.state.uploaded_states[sync_unit] = copy.deepcopy(parsed)
+        print(f"Stored state for sync_unit: {sync_unit}")
         print(json.dumps(parsed, indent=2))
     except Exception as e:
         print("Failed to pretty print JSON:", e)
@@ -147,6 +174,14 @@ async def confirm_upload(request: Request):
         print("Could not parse JSON from /internal/airdrop.artifacts.confirm-upload request body:", e)
 
     return {"status": "success"}
+
+@app.post("/reset-mock-server")
+async def reset_mock_server():
+    """Reset the mock server state by clearing uploaded_states and uploaded_artifacts"""
+    app.state.uploaded_states = {}
+    app.state.uploaded_artifacts = set()
+    print("Mock server state reset - uploaded_states and uploaded_artifacts cleared")
+    return {"status": "success", "message": "Mock server state reset successfully"}
 
 if __name__ == "__main__":
     import uvicorn

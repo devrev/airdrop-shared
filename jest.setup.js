@@ -76,11 +76,59 @@ global.test = (name, fn, timeout) => {
   }, timeout);
 };
 
+// Function to reset the mock server state
+const resetMockServer = async () => {
+  try {
+    const http = require('http');
+    
+    // Simple HTTP request that properly closes the connection
+    const postData = '';
+    const options = {
+      hostname: 'localhost',
+      port: 8003,
+      path: '/reset-mock-server',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+
+    const response = await new Promise((resolve, reject) => {
+      const req = http.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => resolve({ status: res.statusCode, data }));
+      });
+      
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Request timeout'));
+      });
+      
+      req.setTimeout(5000);
+      req.write(postData);
+      req.end();
+    });
+    
+    if (response.status !== 200) {
+      console.warn(`Failed to reset mock server: ${response.status}`);
+    }
+  } catch (error) {
+    console.warn(`Could not connect to mock server for reset: ${error.message}`);
+  }
+};
+
 const originalBeforeEach = global.beforeEach;
 
 global.beforeEach = (fn, timeout) => {
   originalBeforeEach(async () => {
     try {
+      // Reset the mock server state before each test
+      await resetMockServer();
+      
+      // Execute the original beforeEach function
       await fn();
     } catch (err) {
       expect(`beforeEach failed: ${err.message}`).toBe('beforeEach should not fail');
