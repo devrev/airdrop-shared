@@ -10,7 +10,7 @@ app = FastAPI()
 
 # Initialize application state containers
 app.state.uploaded_states = {}
-app.state.uploaded_artifacts = set()
+app.state.uploaded_artifacts = {}  # Changed from set to dict to store content length
 
 class ArtifactPrepareRequest(BaseModel):
     file_name: str
@@ -37,7 +37,8 @@ class AirdropArtifactResponse(BaseModel):
 async def was_artifact_uploaded(artifact_id: str):
     """Check if an artifact with the given artifact_id was uploaded"""
     if artifact_id in app.state.uploaded_artifacts:
-        return {"artifact_id": artifact_id, "uploaded": True}
+        content_length = app.state.uploaded_artifacts[artifact_id]
+        return {"artifact_id": artifact_id, "uploaded": True, "content_length": content_length}
     raise HTTPException(status_code=404, detail="Artifact not found")
 
 @app.post("/upload/{artifact_id:path}")
@@ -53,8 +54,8 @@ async def upload_artifact(
         print(f"Content length: {len(content)}")
         print(f"Content type: {request.headers.get('content-type', 'unknown')}")
         
-        # Remember that this artifact_id was uploaded
-        app.state.uploaded_artifacts.add(artifact_id)
+        # Remember that this artifact_id was uploaded with its content length
+        app.state.uploaded_artifacts[artifact_id] = len(content)
         
         return {"status": "success", "message": "File uploaded successfully"}
     except Exception as e:
@@ -107,10 +108,18 @@ async def get_external_worker(sync_unit: str):
         }
     }
 
+    default_state = {}
+
     # Check if uploaded_states contains the specific sync_unit
     if sync_unit in app.state.uploaded_states:
         print(f"Found uploaded state for sync_unit: {sync_unit}")
-        return ExternalWorkerResponse(state=json.dumps(app.state.uploaded_states[sync_unit]))
+        stored_state = app.state.uploaded_states[sync_unit]
+        # If the stored state is already a string, return it directly
+        # Otherwise, serialize it to JSON
+        if isinstance(stored_state, str):
+            return ExternalWorkerResponse(state=stored_state)
+        else:
+            return ExternalWorkerResponse(state=json.dumps(stored_state))
     else:
         print(f"No uploaded state found for sync_unit: {sync_unit}, returning default state")
         return ExternalWorkerResponse(state=json.dumps(default_state))
@@ -121,10 +130,14 @@ async def update_external_worker(sync_unit: str, request: Request):
     print(f"Received /external-worker.update POST request for sync_unit: {sync_unit}")
     try:
         parsed = json.loads(body.decode("utf-8"))
-        # Store the uploaded state under the specific sync_unit key
-        app.state.uploaded_states[sync_unit] = copy.deepcopy(parsed)
+        # If the parsed JSON has a 'state' field, use that as the state
+        # Otherwise, use the entire parsed object as the state
+        if 'state' in parsed:
+            app.state.uploaded_states[sync_unit] = parsed['state']
+        else:
+            app.state.uploaded_states[sync_unit] = copy.deepcopy(parsed)
         print(f"Stored state for sync_unit: {sync_unit}")
-        print(json.dumps(parsed, indent=2))
+        print(json.dumps(app.state.uploaded_states[sync_unit], indent=2))
     except Exception as e:
         print("Failed to pretty print JSON:", e)
         print(body.decode("utf-8"))
@@ -179,7 +192,7 @@ async def confirm_upload(request: Request):
 async def reset_mock_server():
     """Reset the mock server state by clearing uploaded_states and uploaded_artifacts"""
     app.state.uploaded_states = {}
-    app.state.uploaded_artifacts = set()
+    app.state.uploaded_artifacts = {}
     print("Mock server state reset - uploaded_states and uploaded_artifacts cleared")
     return {"status": "success", "message": "Mock server state reset successfully"}
 
