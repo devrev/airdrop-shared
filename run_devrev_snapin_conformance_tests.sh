@@ -6,8 +6,9 @@ NPM_INSTALL_OUTPUT_FILTER="up to date in|added [0-9]* packages, removed [0-9]* p
 ANSI_ESCAPE_PATTERN="s/\x1b\[[0-9;]*[mK]//g"
 
 # Maximum number of characters to display from log files
-SNAP_IN_LOG_MAX_CHARS=8000
-DEVREV_SERVER_LOG_MAX_CHARS=4000
+SNAP_IN_LOG_MAX_CHARS=30000
+DEVREV_SERVER_LOG_MAX_CHARS=15000
+PROXY_SERVER_LOG_MAX_CHARS=10000
 
 # Function to print a log file, truncating it if it's too large
 print_log_file() {
@@ -38,6 +39,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Get the directory from where the script is being executed
 EXEC_DIR="$(pwd)"
 MOCK_DEVREV_SERVER_LOG="$EXEC_DIR/devrev_server.log"
+PROXY_SERVER_LOG="$EXEC_DIR/proxy_server.log"
 
 # Source environment variables from .env file - look in execution directory
 if [ ! -f "$EXEC_DIR/.env" ]; then
@@ -88,6 +90,24 @@ start_mock_devrev_server() {
     printf "\n"
 }
 
+start_proxy_server() {
+    python3 "$SCRIPT_DIR/rate_limiting_proxy.py" > "$PROXY_SERVER_LOG" 2>&1 &
+    PROXY_SERVER_PID=$!
+    sleep 2  # Give the server time to start
+
+    # Check if the proxy server started successfully.
+    if ! kill -0 "$PROXY_SERVER_PID" > /dev/null 2>&1; then
+        wait "$PROXY_SERVER_PID"
+        EXIT_CODE=$?
+        if [ "$EXIT_CODE" -eq 69 ]; then
+            echo "Proxy server failed to start. Error details:"
+            cat "$PROXY_SERVER_LOG"
+            exit 69
+        fi
+    fi
+    printf "\n"
+}
+
 # Cleanup function to ensure all processes are terminated
 cleanup() {
     # Kill any running npm processes started by this script
@@ -123,9 +143,18 @@ cleanup() {
         fi
     fi
 
+    # Kill proxy server if it exists
+    if [ ! -z "${PROXY_SERVER_PID+x}" ]; then
+        kill $PROXY_SERVER_PID 2>/dev/null
+        if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
+            printf "Proxy server terminated!\n"
+        fi
+    fi
+
     # Remove temporary files if they exist
     [ -f "$build_output" ] && rm "$build_output" 2>/dev/null
     [ -f "$MOCK_DEVREV_SERVER_LOG" ] && rm "$MOCK_DEVREV_SERVER_LOG" 2>/dev/null
+    [ -f "$PROXY_SERVER_LOG" ] && rm "$PROXY_SERVER_LOG" 2>/dev/null
 }
 
 # Set up trap to call cleanup function on script exit, interrupt, or termination
@@ -141,6 +170,13 @@ if ! lsof -i :8003 -t >/dev/null 2>&1; then
 else
     printf "Mock DevRev server is already running on port 8003\n"
     MOCK_SERVER_PID=$(lsof -i :8003 -t)
+fi
+
+if ! lsof -i :8004 -t >/dev/null 2>&1; then
+    start_proxy_server
+else
+    printf "Proxy server is already running on port 8004\n"
+    PROXY_SERVER_PID=$(lsof -i :8004 -t)
 fi
 
 # Check if chef-cli binary exists at CHEF_CLI_PATH
@@ -315,6 +351,8 @@ conformance_tests_result=$?
 
 printf "\n#### Output of the DevRev server log file:\n\n"
 print_log_file "$MOCK_DEVREV_SERVER_LOG" "$DEVREV_SERVER_LOG_MAX_CHARS"
+printf "\n#### Output of the The API Server log file:\n\n"
+print_log_file "$PROXY_SERVER_LOG" "$PROXY_SERVER_LOG_MAX_CHARS"
 printf "\n#### Output of The Snap-In log file:\n"
 print_log_file "$NODE_SUBFOLDER/app.log" "$SNAP_IN_LOG_MAX_CHARS"
 printf "\n"

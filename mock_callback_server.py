@@ -55,7 +55,7 @@ async def handle_request(request: Request):
 if __name__ == "__main__":
     # Set up argument parser
     parser = argparse.ArgumentParser(description='Run FastAPI server with optional port specification')
-    parser.add_argument('--port', type=int, default=8001, help='Port number to run the server on (default: 8001)')
+    parser.add_argument('--port', type=int, default=8002, help='Port number to run the server on (default: 8002)')
     args = parser.parse_args()
 
     print(f"Starting server on http://localhost:{args.port}")

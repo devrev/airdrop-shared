@@ -22,19 +22,41 @@ import {
 The `getAttachmentStream` function is responsible for fetching and streaming attachments from their source URLs.
 
 ```typescript
+import {
+    axiosClient,
+    ExternalSystemAttachmentStreamingParams,
+    ExternalSystemAttachmentStreamingResponse,
+    axios,
+    serializeAxiosError,
+    ... // Other imports from @devrev/ts-adaas
+  } from '@devrev/ts-adaas';
+
 const getAttachmentStream = async ({
   item,
 }: ExternalSystemAttachmentStreamingParams): Promise<ExternalSystemAttachmentStreamingResponse> => {
+  // IMPORTANT: "url" is not necessarily deployed on the base URL of The API. It could also be an external URL (e.g. https://example.com/attachment.pdf, https://devrev.ai, ...)
   const { id, url } = item;
 
+  // NOTE: Import axiosClient directly from @devrev/ts-adaas
   try {
+    // IMPORTANT: If the URL is protected by authentication from The API, you should also use the appropriate credentials.
     const fileStreamResponse = await axiosClient.get(url, {
       responseType: 'stream',
       headers: {
         'Accept-Encoding': 'identity',
+        'Authorization': ... // TODO: Authorization if needed
       },
     });
 
+    // Check if we were rate limited
+    if (fileStreamResponse.status === 429) {
+      const delay = ... // TODO: Calculate the delay from The API
+      return {
+        delay: delay
+      };
+    }
+
+    // IMPORTANT: "httpStream" should be directly Axios response stream (including headers, data, and everything else)
     return { httpStream: fileStreamResponse };
   } catch (error) {
     // Error handling logic
@@ -101,13 +123,6 @@ processTask({
 - Axios errors are handled separately using `serializeAxiosError`
 - Failed attachment metadata is logged for debugging
 - Error responses include the attachment ID for traceability
-
-### Event Emission
-The worker emits different events based on the processing outcome:
-- `ExtractionAttachmentsDelay`: When processing needs to be delayed
-- `ExtractionAttachmentsError`: When an error occurs
-- `ExtractionAttachmentsDone`: When processing completes successfully
-- `ExtractionAttachmentsProgress`: During timeout handling
 
 ### Timeout Handling
 - On timeout, the current state is posted to the platform
