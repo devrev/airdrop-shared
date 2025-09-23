@@ -29,7 +29,7 @@
 
 - The Snap-In will run on Node.js as the runtime environment.
 
-- The Snap-In should use The Airdrop SDK Library version "1.8.0" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
+- The Snap-In should use The Airdrop SDK Library version "1.9.0" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
 
 - Use snake_case for JSON keys.
 
