@@ -9,6 +9,8 @@
 
 - Store The External Domain Metadata JSON object as a separate JSON file.
 
+- The External Domain Metadata JSON object *MUST* be imported without "as" statement in The Implementation Code.
+
 ***Test Requirements:***
 
 - Validate generated The External Domain Metadata JSON object with the chef-cli tool (The Chef CLI) using the command "chef-cli validate-metadata":

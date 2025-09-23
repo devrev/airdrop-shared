@@ -1,0 +1,43 @@
+# Metadata Extraction
+
+During the metadata extraction phase, the snap-in must provide an
+`external_domain_metadata.json` file to Airdrop.
+This file provides a structured way of describing the external system's domain model,
+including its domain entities, types, relationships, and other metadata.
+
+## Triggering event
+
+AirSync initiates the metadata extraction by starting the snap-in with a message with an event
+of type `EXTRACTION_METADATA_START`.
+
+The snap-in must respond to AirSync with a message with an event of type `EXTRACTION_METADATA_DONE`
+when done, or `EXTRACTION_METADATA_ERROR` in case of an error.
+
+## Implementation
+
+```typescript
+import { ExtractorEventType, processTask } from "@devrev/ts-adaas";
+// TODO: Replace "path/to/external_domain_metadata.json" with the actual path to the external domain metadata file.
+import externalDomainMetadata from "path/to/external_domain_metadata.json";
+
+const repos = [{ itemType: "external_domain_metadata" }];
+
+processTask({
+  task: async ({ adapter }) => {
+    adapter.initializeRepos(repos);
+    await adapter
+      .getRepo("external_domain_metadata")
+      ?.push([externalDomainMetadata]);
+    await adapter.emit(ExtractorEventType.ExtractionMetadataDone);
+  },
+  onTimeout: async ({ adapter }) => {
+    await adapter.emit(ExtractorEventType.ExtractionMetadataError, {
+      error: { message: "Failed to extract metadata. Lambda timeout." },
+    });
+  },
+});
+```
+
+<Note>The snap-in must always emit a single message.</Note>
+
+IMPORTANT: The External Domain Metadata JSON *MUST NOT* be normalized when pushed to the repository.

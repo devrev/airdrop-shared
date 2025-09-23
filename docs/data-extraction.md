@@ -100,6 +100,8 @@ processTask<ExtractorState>({
 });
 ```
 
+NOTE: Do not call `initializeRepos` multiple times. You should call it only once with all the repositories.
+
 After initialization of repositories using `initializeRepos`,
 items should be then retrieved from the external system and stored in the correct repository by calling the `push` function.
 

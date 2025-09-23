@@ -6,6 +6,7 @@
   - When working with devrev_leaf_type, be aware that the schema expects different formats depending on context. In most places, it should be passed as an object with object_category and object_type. However, in the airdrop-recipe-create-possible-record-type-mapping context, it must be a string representing only the object_type.
   - Please note that mappings are split into separate ‘shards’ - one for each record type - for easier manipulation and storage.
   - Please note that a leaf type or a concrete id has to be selected for use_devrev_record, but not both.
+  - Please note that field "record_type_mappings" has to be placed inside the "additional_mappings" object.
 
 - The Stock Field Mapping Field is a configuration object within the Initial Domain Mapping JSON structure that defines how external system data fields are mapped to DevRev's built-in (stock) fields. It is located within the "stock_field_mappings" object inside a blueprint shard configuration.
 

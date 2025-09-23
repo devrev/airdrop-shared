@@ -3,7 +3,7 @@ A function can be invoked synchronously or asynchronously.
 You need to implement the run method in your function. The run method is called when the function is invoked. The run method signature is defined below:
 
 ```typescript
-async function run(events: any[]): any;
+async function run(events: FunctionInput[]): any;
 ```
 
 The value returned from the `run` method is passed back in synchronous execution modes, such as commands, snap kit actions, and event source synchronous execution. In asynchronous execution modes, such as automation execution, the return value is ignored.

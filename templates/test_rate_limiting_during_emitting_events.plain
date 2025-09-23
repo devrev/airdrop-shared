@@ -1,0 +1,5 @@
+  - When the input event is "{{ input_event_name }}", the Extraction Function must handle rate limiting using the following test flow:
+    - Step 1: Make a POST request to "http://localhost:8004/start_rate_limiting" with body `{ "test_name": <identifyer of the test>}`.
+    - Step 2: Invoke The Extraction Function using the resource [{{ resource_name }}](test_data/{{ resource_name }}).
+      - Expect The Callback Server to receive *a single* event with "event_type" "{{ expected_output_event_type }}".
+    - Step 3: Make a POST request to "http://localhost:8004/end_rate_limiting".
