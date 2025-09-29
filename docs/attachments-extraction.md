@@ -33,6 +33,7 @@ import {
 
 const getAttachmentStream = async ({
   item,
+  event,
 }: ExternalSystemAttachmentStreamingParams): Promise<ExternalSystemAttachmentStreamingResponse> => {
   // IMPORTANT: "url" is not necessarily deployed on the base URL of The API. It could also be an external URL (e.g. https://example.com/attachment.pdf, https://devrev.ai, ...)
   const { id, url } = item;
@@ -44,7 +45,7 @@ const getAttachmentStream = async ({
       responseType: 'stream',
       headers: {
         'Accept-Encoding': 'identity',
-        'Authorization': ... // TODO: Authorization if needed
+        'Authorization': ... // TODO: Authorization if needed. Credentials should be read from event["payload"]["connection_data"]["key"]
       },
     });
 
