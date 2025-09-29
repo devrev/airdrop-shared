@@ -172,6 +172,9 @@ else
     MOCK_SERVER_PID=$(lsof -i :8003 -t)
 fi
 
+# Set HTTPS_PROXY environment variable to point to proxy server
+export HTTPS_PROXY="http://localhost:8004"
+
 if ! lsof -i :8004 -t >/dev/null 2>&1; then
     start_proxy_server
 else
@@ -351,8 +354,6 @@ conformance_tests_result=$?
 
 printf "\n#### Output of the DevRev server log file:\n\n"
 print_log_file "$MOCK_DEVREV_SERVER_LOG" "$DEVREV_SERVER_LOG_MAX_CHARS"
-printf "\n#### Output of the The API Server log file:\n\n"
-print_log_file "$PROXY_SERVER_LOG" "$PROXY_SERVER_LOG_MAX_CHARS"
 printf "\n#### Output of The Snap-In log file:\n"
 print_log_file "$NODE_SUBFOLDER/app.log" "$SNAP_IN_LOG_MAX_CHARS"
 printf "\n"
