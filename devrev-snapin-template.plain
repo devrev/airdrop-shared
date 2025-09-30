@@ -11,10 +11,10 @@
   - Please note that EventContextIn and EventContextOut interfaces are deprecated.
 
 - The External Domain Metadata is a JSON object that describes the logical domain model of an external system. It defines the types of external record types, the relationships between those record types, and the metadata associated with each field, including the field’s data type, human-readable name, and other descriptive attributes.
-  - Note: Resource "attachments" should not be included in The External Domain Metadata JSON object even if the external system supports attachments. This is handled automatically by The Airdrop SDK Library.
+  - Note: Resource "attachments" *MUST NOT* be included in The External Domain Metadata JSON object even if the external system supports attachments. This is handled automatically by The Airdrop SDK Library.
 
 - The Initial Domain Mapping is a JSON object that defines how the logical domain model described by The External Domain Metadata maps to the target domain model in DevRev. It specifies the correspondence between each external record type and DevRev leaf type, as well as the mapping of individual fields, including transformation logic, value conversions, and any fixed or default values.
-  - Note: Resource "attachments" should not be included in The Initial Domain Mapping JSON object even if the external system supports attachments. This is handled automatically by The Airdrop SDK Library.
+  - Note: Resource "attachments" *MUST NOT* be included in The Initial Domain Mapping JSON object even if the external system supports attachments. This is handled automatically by The Airdrop SDK Library.
 
 - The External Sync Unit Item Count is a numeric field representing the total number of items (such as cards) contained within a given external sync unit. It is accessible as "item_count" field of the external sync unit.
 
