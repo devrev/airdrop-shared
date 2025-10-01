@@ -164,23 +164,30 @@ trap cleanup EXIT SIGINT SIGTERM
 check_and_kill_node_server 8000
 check_and_kill_node_server 8002
 
-# Start the mock DevRev server if it's not already running
-if ! lsof -i :8003 -t >/dev/null 2>&1; then
-    start_mock_devrev_server
-else
-    printf "Mock DevRev server is already running on port 8003\n"
-    MOCK_SERVER_PID=$(lsof -i :8003 -t)
+# Ensure nothing is running on port 8003, then start the mock DevRev server
+existing_pids=$(lsof -i :8003 -t 2>/dev/null)
+if [ ! -z "$existing_pids" ]; then
+	printf "Killing existing process(es) on port 8003: %s\n" "$existing_pids"
+	for pid in $existing_pids; do
+		kill $pid 2>/dev/null
+	done
+	sleep 1
 fi
+start_mock_devrev_server
 
 # Set HTTPS_PROXY environment variable to point to proxy server
 export HTTPS_PROXY="http://localhost:8004"
 
-if ! lsof -i :8004 -t >/dev/null 2>&1; then
-    start_proxy_server
-else
-    printf "Proxy server is already running on port 8004\n"
-    PROXY_SERVER_PID=$(lsof -i :8004 -t)
+# Ensure nothing is running on port 8004, then start the proxy server
+existing_pids_8004=$(lsof -i :8004 -t 2>/dev/null)
+if [ ! -z "$existing_pids_8004" ]; then
+    printf "Killing existing process(es) on port 8004: %s\n" "$existing_pids_8004"
+    for pid in $existing_pids_8004; do
+        kill $pid 2>/dev/null
+    done
+    sleep 1
 fi
+start_proxy_server
 
 # Check if chef-cli binary exists at CHEF_CLI_PATH
 if [ -z "$CHEF_CLI_PATH" ] || [ ! -f "$CHEF_CLI_PATH" ] || [ ! -x "$CHEF_CLI_PATH" ]; then
