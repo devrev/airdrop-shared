@@ -1,10 +1,10 @@
-  - Test The Extraction Function with the following flow (The Attachment Test Flow):
-    - Step 1: Invoke The Extraction Function using the resource [{{ data_extraction_resource_name }}](test_data/{{ data_extraction_resource_name }}).
-      - Expect The Callback Server to receive from DevRev a **single** event with "event_type" that equals "EXTRACTION_DATA_DONE".
-    - Step 2: Invoke The Extraction Function using the resource [{{ attachment_extraction_resource_name }}](test_data/{{ attachment_extraction_resource_name }}).
-      - Expect The Callback Server to receive from DevRev a **single** event (`:= event_from_callback_server`) with "event_type" that equals "EXTRACTION_ATTACHMENTS_DONE".
-      - Expect `event_from_callback_server["event_data"]["artifacts"]` to be an array. Expect this array to not be empty. Expect this array to have length 1.
-      - Let `artifact_object = event_from_callback_server["event_data"]["artifacts"][0]`.
-        - Expect `artifact_object["item_type"] = "ssor_attachment"` and `artifact_object["item_count"] = {{ expected_attachment_count }}`.
-        - Make a GET request to "http://localhost:8003/is_uploaded/{artifact_object['id']}". Expect response code to be equal to 200. 
-    - Note: The Attachment Test Flow should be executed within a single test.
+Test The Extraction Function with the following flow (The Attachment Test Flow):
+  - Step 1: Invoke The Extraction Function using the resource [{{ data_extraction_resource_name }}](test_data/{{ data_extraction_resource_name }}).
+    - Expect The Callback Server to receive from DevRev a **single** event with "event_type" that equals "EXTRACTION_DATA_DONE".
+  - Step 2: Invoke The Extraction Function using the resource [{{ attachment_extraction_resource_name }}](test_data/{{ attachment_extraction_resource_name }}).
+    - Expect The Callback Server to receive from DevRev a **single** event (`:= event_from_callback_server`) with "event_type" that equals "EXTRACTION_ATTACHMENTS_DONE".
+    - Expect `event_from_callback_server["event_data"]["artifacts"]` to be an array. Expect this array to not be empty. Expect this array to have length 1.
+    - Let `artifact_object = event_from_callback_server["event_data"]["artifacts"][0]`.
+      - Expect `artifact_object["item_type"] = "ssor_attachment"` and `artifact_object["item_count"] = {{ expected_attachment_count }}`.
+      - Make a GET request to "http://localhost:8003/is_uploaded/{artifact_object['id']}". Expect response code to be equal to 200. 
+  - Note: The Attachment Test Flow should be executed within a single test.

@@ -6,9 +6,9 @@ NPM_INSTALL_OUTPUT_FILTER="up to date in|added [0-9]* packages, removed [0-9]* p
 ANSI_ESCAPE_PATTERN="s/\x1b\[[0-9;]*[mK]//g"
 
 # Maximum number of characters to display from log files
-SNAP_IN_LOG_MAX_CHARS=30000
-DEVREV_SERVER_LOG_MAX_CHARS=15000
-PROXY_SERVER_LOG_MAX_CHARS=10000
+SNAP_IN_LOG_MAX_CHARS=80000
+DEVREV_SERVER_LOG_MAX_CHARS=40000
+PROXY_SERVER_LOG_MAX_CHARS=20000
 
 # Function to print a log file, truncating it if it's too large
 print_log_file() {
