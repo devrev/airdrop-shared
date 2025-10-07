@@ -75,6 +75,18 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
     resp.status(400).send(errMsg);
     return;
   }
+  // crash the process if an empty array is provided
+  if (Array.isArray(events) && events.length === 0) {
+    let errMsg = 'Invalid request format: body is an empty array';
+    error = {
+      err_type: RuntimeErrorType.InvalidRequest,
+      err_msg: errMsg,
+    } as RuntimeError;
+    console.error(error.err_msg);
+    // Return validation error status for empty events input
+    resp.status(400).send(errMsg);
+    return;
+  }
   // if the request is synchronous, there should be a single event
   if (!isAsync) {
     if (events.length > 1) {
@@ -88,6 +100,29 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
       return;
     }
   } else {
+    // Preflight validation for async requests: ensure each event is minimally valid
+    for (let event of events) {
+      if (!event || !event.execution_metadata) {
+        let errMsg = 'Invalid request format: missing execution_metadata';
+        console.error(errMsg);
+        resp.status(400).send(errMsg);
+        return;
+      }
+      const functionName: FunctionFactoryType = event.execution_metadata.function_name as FunctionFactoryType;
+      if (functionName === undefined) {
+        let errMsg = 'Function name not provided in event';
+        console.error(errMsg);
+        resp.status(400).send(errMsg);
+        return;
+      }
+      const f = functionFactory[functionName];
+      if (f == undefined) {
+        let errMsg = `Function ${event.execution_metadata.function_name} not found in factory`;
+        console.error(errMsg);
+        resp.status(400).send(errMsg);
+        return;
+      }
+    }
     // return a success response back to the server
     resp.status(200).send();
   }
@@ -101,8 +136,13 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
         err_msg: errMsg,
       } as RuntimeError;
       console.error(error.err_msg);
-      resp.status(400).send(errMsg);
-      return;
+      if (!isAsync) {
+        resp.status(400).send(errMsg);
+        return;
+      } else {
+        // For async requests, response has already been sent; skip further processing for this event
+        continue;
+      }
     }
     const functionName: FunctionFactoryType = event.execution_metadata.function_name as FunctionFactoryType;
     if (functionName === undefined) {
@@ -111,7 +151,13 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
         err_msg: 'Function name not provided in event',
       } as RuntimeError;
       console.error(error.err_msg);
-      receivedError = true;
+      if (!isAsync) {
+        resp.status(400).send(error.err_msg);
+        return;
+      } else {
+        receivedError = true;
+        continue;
+      }
     } else {
       const f = functionFactory[functionName];
       try {
@@ -121,7 +167,13 @@ async function handleEvent(events: any[], isAsync: boolean, resp: Response) {
             err_msg: `Function ${event.execution_metadata.function_name} not found in factory`,
           } as RuntimeError;
           console.error(error.err_msg);
-          receivedError = true;
+          if (!isAsync) {
+            resp.status(400).send(error.err_msg);
+            return;
+          } else {
+            receivedError = true;
+            continue;
+          }
         } else {
           result = await run(f, [event]);
         }
