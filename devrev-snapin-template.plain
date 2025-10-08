@@ -106,7 +106,7 @@
   - Test The Function using the resource [external_sync_unit_check.json](test_data/external_sync_unit_check.json). Test is successful if The Callback Server receives from DevRev an event with "event_type" that equals "EXTRACTION_EXTERNAL_SYNC_UNITS_DONE". The test must not send the event directly to The Callback Server.
 
 - Implement The Function called "data_extraction_check" (The Data Extraction Check Function) that provides a test of the 'data extraction' part of the extraction workflow as described in the resource [data-extraction.md](docs/data-extraction.md). The Data Extraction Check Function should:
-  - if "event_type" equals "EXTRACTION_DATA_START" or "EXTRACTION_ATTACHMENTS_CONTINUE", The Data Extraction Check Function should:
+  - if "event_type" equals "EXTRACTION_DATA_START" or "EXTRACTION_DATA_CONTINUE", The Data Extraction Check Function should:
     - Initialize a single repo "users"
     - normalize the users data using The Normalization Function
     - push the normalized users data to The DevRev Servers
