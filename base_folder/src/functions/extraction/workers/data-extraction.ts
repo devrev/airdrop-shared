@@ -1,6 +1,9 @@
-import { processTask } from "@devrev/ts-adaas";
+import { ExtractorEventType, processTask } from "@devrev/ts-adaas";
+import { ExtractorState } from "../index";
 
-processTask({
+processTask<ExtractorState>({
   task: async ({ adapter }) => {},
-  onTimeout: async ({ adapter }) => {},
+  onTimeout: async ({ adapter }) => {
+    await adapter.emit(ExtractorEventType.ExtractionDataProgress);
+  },
 });
