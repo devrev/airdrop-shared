@@ -1,0 +1,5 @@
+The Functions implemented *should* also return:
+  - `status_code` - a status code from The API.
+  - `api_delay` - Delay in seconds to wait before retrying the request to The API (if no rate limit, set to 0)
+  - `message` - Information about the call the The Function.
+  - Note: Every The Function should handle rate limiting.
