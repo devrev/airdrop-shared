@@ -15,27 +15,7 @@ This state object is shared across all invocations and keeps track of where the 
 
 ## Triggering event
 
-Airdrop initiates data extraction by starting the snap-in with a message with event type
-`EXTRACTION_DATA_START` when transitioning to the data extraction phase.
-
-During the data extraction phase, the snap-in extracts data from an external system,
-prepares batches of data and uploads them in the form of artifacts (files) to DevRev.
-
-The snap-in must respond to Airdrop with a message with event type of `EXTRACTION_DATA_PROGRESS`,
-together with an optional progress estimate when the maximum Airdrop snap-in runtime (13 minutes) has been reached.
-
-If the extraction has been rate-limited by the external system and back-off is required, the snap-in
-must respond to Airdrop with a message with event type `EXTRACTION_DATA_DELAY` and specifying
-back-off time with `delay` attribute (in seconds as an integer).
-
-In both cases, Airdrop starts the snap-in with a message with event type `EXTRACTION_DATA_CONTINUE`.
-In case of `EXTRACTION_DATA_PROGRESS` the restarting is immediate,
-meanwhile in case of `EXTRACTION_DATA_DELAY` the restarting is delayed for the given number of seconds.
-
-Once the data extraction is done, the snap-in must respond to Airdrop with a message with event type `EXTRACTION_DATA_DONE`.
-
-If data extraction failed in any moment of extraction, the snap-in must respond to Airdrop with a
-message with event type `EXTRACTION_DATA_ERROR`.
+Refer to the resource [data-extraction-rules-for-emitting-events.md](docs/data-extraction-rules-for-emitting-events.md) for the rules for emitting events for The Extraction Function.
 
 ## Implementation
 
