@@ -94,6 +94,8 @@
 
 - The Function being implemented *MUST not* be called "extraction" or "loading".
 
+- {% include "templates/should_not_modify_extraction_function.plain" %}
+
 ***Functional Requirements:***
 
 - Implement The Function that only checks if The Function can be invoked.

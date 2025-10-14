@@ -1,0 +1,6 @@
+Test The Extraction Function using the resource [{{ resource_name }}](test_data/{{ resource_name }}). 
+  - Expect The Callback Server to receive *a single* event with "event_type" "EXTRACTION_EXTERNAL_SYNC_UNITS_DONE".
+  - Let `external_sync_units_array = <event_from_callback_server>["event_data"]["external_sync_units"]` (array of objects).
+    - Expect `external_sync_units_array` to exist and be an array.
+    - Expect `len(external_sync_units_array) = {{ expected_external_sync_unit_count }}`.
+    - Out of `external_sync_units_array`, expect that there exists and element that has "name" equal to "{{ expected_external_sync_unit_name }}".
