@@ -74,6 +74,14 @@
 - The Conformance Tests should send a single event to the Snap-In Server in the request body without wrapping it in an array.
   - It is safe to assume that event payload will never be undefined, null, or empty.
 
+- Do not invoke The Function with:
+  - "function_name" that doesn't exist.
+  - Empty event payload.
+  - "None" event payload.
+  - Missing "execution_metadata" field.
+
+- More generally, for any unexpected events sent to The Snap-In Server, do not rely on the returned status codes being correct or meaningful.
+
 - If generating The Acceptance Test that references a JSON file (The Attached JSON Of The Acceptance Test) in the resource, you should:
   - Store The Attached JSON Of The Acceptance Test in a separate JSON file.
   - Make sure to replace placeholders of the credentials (in `event["payload"]["connection_data"]["key"]` and `event["payload"]["connection_data"]["org_id"]`) in The Attached JSON Of The Acceptance Test with the actual values (credentials from The API).
