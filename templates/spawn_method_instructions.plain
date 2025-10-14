@@ -7,3 +7,5 @@
 
 - Use The Initial Domain Mapping JSON object for initialDomainMapping parameter when spawning a new worker.
   - Note: The Initial Domain Mapping JSON object should be read directly from the JSON file.
+
+- The Extraction Function should not stringify error messages. If an error is thrown, it should be logged before throwing it.

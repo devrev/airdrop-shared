@@ -11,6 +11,8 @@
 
 - The External Domain Metadata JSON object *MUST* be imported without "as" statement in The Implementation Code.
 
+- {% include "templates/should_not_modify_extraction_function.plain" %}
+
 ***Test Requirements:***
 
 - Validate generated The External Domain Metadata JSON object with the chef-cli tool (The Chef CLI) using the command "chef-cli validate-metadata":

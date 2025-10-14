@@ -6,7 +6,6 @@ export interface ExtractorState {}
 
 export const initialState: ExtractorState = {};
 
-
 function getWorkerPerExtractionPhase(event: FunctionInput) {
   let path;
   switch (event.payload.event_type) {
