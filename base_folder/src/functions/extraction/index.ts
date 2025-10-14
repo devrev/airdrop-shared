@@ -2,6 +2,10 @@ import { convertToAirdropEvent } from '../../core/utils';
 import { FunctionInput } from '../../core/types';
 import { spawn, EventType } from '@devrev/ts-adaas';
 
+export interface ExtractorState {}
+
+export const initialState: ExtractorState = {};
+
 function getWorkerPerExtractionPhase(event: FunctionInput) {
   let path;
   switch (event.payload.event_type) {
@@ -29,7 +33,7 @@ const run = async (events: FunctionInput[]) => {
     await spawn({
       event: convertToAirdropEvent(event),
       workerPath: file,
-      initialState: {},
+      initialState: initialState,
     });
   }
 };
