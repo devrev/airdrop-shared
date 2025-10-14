@@ -21,7 +21,6 @@
 - The Normalization Function is a function that is responsible for normalizing the data from The API to the data expected by The External Domain Metadata JSON object's record type.
 
 - The Extraction Function is The Function named "extraction". It is responsible for pushing data to the DevRev servers (The DevRev Servers) based on various event types.
-  - "event_type" equals "EXTRACTION_DATA_START" or "event_type" equals "EXTRACTION_DATA_CONTINUE" and we get a timeout, The Worker Thread should emit event "EXTRACTION_DATA_PROGRESS".
 
 ***Non-Functional Requirements:***
 

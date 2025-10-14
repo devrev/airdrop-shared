@@ -91,7 +91,12 @@ start_mock_devrev_server() {
 }
 
 start_proxy_server() {
-    python3 "$SCRIPT_DIR/rate_limiting_proxy.py" > "$PROXY_SERVER_LOG" 2>&1 &
+    # Check if the rate limiting proxy file exists
+    if [ ! -f "$EXEC_DIR/rate_limiting_proxy.py" ]; then
+        printf "Error: rate_limiting_proxy.py file not found in $EXEC_DIR/rate_limiting_proxy.py. This file should exist (and should be adopted for 3rd party service's rate limiting response format).\n"
+        exit 69
+    fi
+    python3 "$EXEC_DIR/rate_limiting_proxy.py" > "$PROXY_SERVER_LOG" 2>&1 &
     PROXY_SERVER_PID=$!
     sleep 2  # Give the server time to start
 
@@ -201,6 +206,12 @@ if [ -z "$EXTRACTED_FILES_FOLDER_PATH" ]; then
     exit 69 # EXIT_SERVICE_UNAVAILABLE
 fi
 
+# Check if EXTRACTED_FILES_FOLDER_PATH does not end with "node_$1/build"
+if [[ "$EXTRACTED_FILES_FOLDER_PATH" != *"node_$1/extracted_files" ]]; then
+    echo "Error: EXTRACTED_FILES_FOLDER_PATH should end with 'node_$1/extracted_files'."
+    echo "Note: The value of EXTRACTED_FILES_FOLDER_PATH should be <path_to_directory_where_you_rendered_the_snap-in>/node_$1/extracted_files."
+    exit 69 # EXIT_SERVICE_UNAVAILABLE
+fi
 
 # Check if build folder name is provided
 if [ -z "$1" ]; then
