@@ -60,6 +60,7 @@
 
 - The Conformance Tests should spin a server at http://localhost:8002 for testing callbacks (The Callback Server).
   - The Conformance Tests *MUST NOT* send the event directly to The Callback Server.
+  - The Implementation Code *MUST NOT* send the event directly to The Callback Server.
 
 - The DevRev Server runs at http://localhost:8003, so it must not be mocked.
 
