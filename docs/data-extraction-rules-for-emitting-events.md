@@ -5,7 +5,7 @@
 Here are the rules when `EXTRACTION_DATA_START` or `EXTRACTION_DATA_CONTINUE` event is received by the snap-in:
 
 - If there's a timeout ("onTimeout" method in "spawn" method), the snap-in should emit an event with type `EXTRACTION_DATA_PROGRESS` (no "data" payload).
-  - Note: Event `EXTRACTION_DATA_PROGRESS` **MUST NEVER** be emitted if the the "task" method in The Worker Thread. The Only place where `EXTRACTION_DATA_PROGRESS` can be emitted is in the "onTimeout" method in The Worker Thread.
+  - Note: Event `EXTRACTION_DATA_PROGRESS` **MUST NEVER** be emitted if the "task" method in The Worker Thread. The Only place where `EXTRACTION_DATA_PROGRESS` can be emitted is in the "onTimeout" method in The Worker Thread.
 - If the extraction is successful and all the resources have been extracted, the snap-in should emit an event with type `EXTRACTION_DATA_DONE` (no "data" payload).
 - In case of unexpected error, the snap-in should emit an event with type `EXTRACTION_DATA_ERROR` ("data" payload should contain attribute "error" - error message as a string).
 - In case of rate limiting (status code 429) for "data extraction", the snap-in *must* emit an event with type `EXTRACTION_DATA_DELAY`. If emitting event of type `EXTRACTION_DATA_DELAY`, you *must* also provide a "delay" attribute, specifying the delay in seconds as an integer.
