@@ -14,6 +14,8 @@
 
 - The External Transformation Method is a transformation method that is used to map an external field to a DevRev stock field. To apply The External Transformation Method to The Stock Field Mapping Field, set the Metadata extraction transformation method type to "use_directly", "use_as_array_value", "use_rich_text", depending on the context. Field "primary_external_field" should be set to the name of the external field to map.
 
+- The Map Enum Transformation Method is a transformation method that is used to map an external field enum to a DevRev enum. To apply The Map Enum to The Stock Field Mapping Field, set set the Metadata extraction transformation method type to "map_enum". If using The Map Enum, the value of the field "transformation_method_for_set" inside The Stock Field Mapping Field should be `{"forward": "<value>", "transformation_method": "map_enum", "is_array": false}`, where `<value>` is a JSON object. This JSON object has keys, which are all possible enum values of the external field. Each key has a value, which is also a JSON object `{"value": "<DevRev_value>"}`, where `<DevRev_value>` is the enum value to which the external field enum maps.
+
 - The DevRev Record Transformation Method is a transformation method that is used enable use of a fixed reference to something in DevRev. To apply The DevRev Record Transformation Method to The Stock Field Mapping Field, set the Metadata extraction transformation method type to "use_devrev_record".
 
 - The Shard Mode Type is an option in The Initial Domain Mapping JSON object through which you can specify shard type for the mapping for the given record type.
