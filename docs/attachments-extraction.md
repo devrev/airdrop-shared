@@ -1,7 +1,7 @@
-# Attachments Extraction Worker
+# Attachments Streaming Worker
 
 ## Overview
-This worker handles the extraction of attachments from an external system and streams them to the Airdrop platform. It's designed to work with the `@devrev/ts-adaas` library and follows the Airdrop platform's event-driven architecture.
+This worker handles the streaming of attachments to the Airdrop platform. It's designed to work with the `@devrev/ts-adaas` library and follows the Airdrop platform's event-driven architecture.
 
 ## Dependencies
 ```typescript
@@ -106,9 +106,7 @@ processTask({
     }
   },
   onTimeout: async ({ adapter }) => {
-    await adapter.emit(ExtractorEventType.ExtractionAttachmentsProgress, {
-      progress: 50,
-    });
+    await adapter.emit(ExtractorEventType.ExtractionAttachmentsProgress);
   },
 });
 ```
@@ -127,7 +125,6 @@ processTask({
 
 ### Timeout Handling
 - On timeout, the current state is posted to the platform
-- A progress event is emitted with 50% completion
 - This allows the platform to resume processing from the last known state
 
 ## Usage
