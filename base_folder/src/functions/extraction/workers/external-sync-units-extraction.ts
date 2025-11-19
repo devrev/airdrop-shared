@@ -1,7 +1,6 @@
 import { ExtractorEventType, processTask } from "@devrev/ts-adaas";
-import { ExtractorState } from "../index";
 
-processTask<ExtractorState>({
+processTask({
   task: async ({ adapter }) => {},
   onTimeout: async ({ adapter }) => {
     await adapter.emit(ExtractorEventType.ExtractionExternalSyncUnitsError, {
