@@ -1,10 +1,14 @@
-validate The Normalization Function with the chef-cli tool (The Chef CLI) using the command "chef-cli validate-data -m <The External Domain Metadata JSON object file> -r {{ record_type }}":
-  - To invoke the function that returns The External Domain Metadata JSON object, send the event [external_domain_metadata_event_payload.json](test_data/external_domain_metadata_event_payload.json) to The Snap-In server.
-  - The External Domain Metadata JSON object should then be stored in temporary file and provided as path to the validation of The Normalization Function.
-  - The Chef CLI reads the extracted file (The Extracted File) from stdin.
-  - The Extracted File is inside folder provided in the environment variable "EXTRACTED_FILES_FOLDER_PATH". To retrieve the relevant file name, command `ls EXTRACTED_FILES_FOLDER_PATH | grep extractor_{{ record_type }} | sort -r | head -n 1` should be executed. The test should always fail if The Extracted File is not present.
-  - Please note that the expected behaviour is that only after the invocation of The Extraction Function, the folder provided in the environment variable "EXTRACTED_FILES_FOLDER_PATH" should exist. The test should always fail if before the execution of The Chef CLI, the folder "EXTRACTED_FILES_FOLDER_PATH" does not exist or if The Extracted File is not found.
-  - The path to The Chef CLI executable is provided in the environment variable `CHEF_CLI_PATH`.
-  - For the validation of The Normalization Function to be successful The Chef CLI must return an empty output. The implementation of The Extraction Function directly infuences the output of The Chef CLI.
-  - The stdout and stderr of The Chef CLI *must* be printed to the console.
-  - The test should always fail if The Chef CLI is not available.
+Validate :NormalizationFunction: with :ChefCLI: for the "{{ record_type }}" record type with the following flow:
+  - Step 1.: Invoke :ExtractionFunction: using the resource [data_extraction_test.json](test_data/data_extraction_test.json).
+  - Step 2.: Retrieve full extracted file path (`:= fullExtractedFilePath`)
+    - The extracted file name (`:= extractedFileName`) is the name of the file created by :ExtractionFunction:
+    - extractedFileName is located in the folder provided in the environment variable "EXTRACTED_FILES_FOLDER_PATH".
+    - To retrieve extractedFileName, execute the following command: `ls EXTRACTED_FILES_FOLDER_PATH | grep extractor_{{ record_type }} | sort -r | head -n 1`
+    - The test should fail the folder "EXTRACTED_FILES_FOLDER_PATH" does not exist or if the extractedFileName is not found.
+    - fullExtractedFilePath is the full path to the extractedFileName.
+  - Step 3.: In :ConformanceTests:, create a separate file for :ExternalDomainMetadataJSONObject:. Contents of :ExternalDomainMetadataJSONObject: JSON object **MUST NOT** be modified compared to the original file contents.
+  - Step 4.: Validate :NormalizationFunction: with :ChefCLI: using the command `"${CHEF_CLI_PATH}" validate-data -m <path to :ExternalDomainMetadataJSONObject: file> -r {{ record_type }} < <fullExtractedFilePath>`:
+    - Validation is successful precisely when both the stdout and stderr of :ChefCLI: are empty.
+    - Expect the validation of :ChefCLI: to succeed. If it fails, normalization method for "{{ record_type }}" in :Implementation: should be fixed.
+    - For the validation of :NormalizationFunction: to be successful The :ChefCLI: must return an empty output. Note that the implementation of :ExtractionFunction: directly infuences the output of :ChefCLI:.
+    - The stdout and stderr of :ChefCLI: *MUST* be printed to the console.

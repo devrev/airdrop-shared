@@ -1,128 +1,181 @@
 ***Definitions:***
 
-- The Snap-In is a TypeScript Node.js application.
+- :SnapIn: is a TypeScript Node.js application.
 
-- The Function implements part of The Snap-In functionality.
-  - Details on how The Function must be invoked are provided in the resource [Function Invocation](docs/function_invocation.mdx).
-  - The Function should only take the first event from the array of events and process it. The Function can be invoked multiple times for multiple events.
+- :Implementation: is how :SnapIn: is implemented.
 
-- The Airdrop SDK Library for TypeScript helps developers build snap-ins that integrate with DevRev’s Airdrop platform.
-  - The documentation for the The Airdrop SDK Library is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
+- :Function: implements part of :SnapIn: functionality.
+  - Details on how :Function: must be invoked are provided in the resource [FunctionInvocation](docs/function_invocation.mdx).
+  - :Function: should only take the first event from the array of events and process it.
+  - :Function: can be invoked multiple times for multiple events.
+
+- :AirdropSDKLibrary: for TypeScript helps developers build snap-ins that integrate with DevRev's Airdrop platform.
+  - The documentation for :AirdropSDKLibrary: is provided in the resource [airdrop_sdk_library_documentation.md](docs/airdrop_sdk_library_documentation.md).
   - Please note that EventContextIn and EventContextOut interfaces are deprecated.
 
-- The External Domain Metadata is a JSON object that describes the logical domain model of an external system. It defines the types of external record types, the relationships between those record types, and the metadata associated with each field, including the field’s data type, human-readable name, and other descriptive attributes.
-  - Note: Resource "attachments" *MUST NOT* be included in The External Domain Metadata JSON object even if the external system supports attachments. This is handled automatically by The Airdrop SDK Library.
+- :ExternalDomainMetadataJSONObject: is a JSON object that describes the logical domain model of an external system. It defines the types of external record types, the relationships between those record types, and the metadata associated with each field, including the field's data type, human-readable name, and other descriptive attributes.
+  - Note: Resource "attachments" *MUST NOT* be included in :ExternalDomainMetadataJSONObject: even if the external system supports attachments. This is handled automatically by :AirdropSDKLibrary:.
 
-- The Initial Domain Mapping is a JSON object that defines how the logical domain model described by The External Domain Metadata maps to the target domain model in DevRev. It specifies the correspondence between each external record type and DevRev leaf type, as well as the mapping of individual fields, including transformation logic, value conversions, and any fixed or default values.
-  - Note: Resource "attachments" *MUST NOT* be included in The Initial Domain Mapping JSON object even if the external system supports attachments. This is handled automatically by The Airdrop SDK Library.
+- :InitialDomainMappingJSONObject: is a JSON object that defines how the logical domain model described by :ExternalDomainMetadataJSONObject: maps to the target domain model in DevRev. It specifies the correspondence between each external record type and DevRev leaf type, as well as the mapping of individual fields, including transformation logic, value conversions, and any fixed or default values.
+  - Note: Resource "attachments" *MUST NOT* be included in :InitialDomainMappingJSONObject: even if the external system supports attachments. This is handled automatically by :AirdropSDKLibrary:.
 
-- The External Sync Unit Item Count is a numeric field representing the total number of items (such as cards) contained within a given external sync unit. It is accessible as "item_count" field of the external sync unit.
+- :API: is the API of the external system.
 
-- The Normalization Function is a function that is responsible for normalizing the data from The API to the data expected by The External Domain Metadata JSON object's record type.
+- :ExternalSyncUnit: refers to a single unit in the external system that is being synced to DevRev with :SnapIn:.
 
-- The Extraction Function is The Function named "extraction". It is responsible for pushing data to the DevRev servers (The DevRev Servers) based on various event types.
+- :APIClient: is a TypeScript service that communicates with :API:. These are the rules for :APIClient: 
+  - If we need to create a new request to :API:, we must create a new method in :APIClient:.
+  - Communication with :API: must be completely abstracted away from :Function:. :Function: must be able to initialize :APIClient:, call the relevant method from :APIClient: and get the response from :API:.
+
+- :NormalizationFunction: is a function that is responsible for normalizing the data from :API: to the data expected by the record type of :ExternalDomainMetadataJSONObject:.
+
+- :DevRevServers: are the servers where :SnapIn: is executed.
+
+- :WorkerDataServer: is one of :DevRevServers:.
+
+- :TestSnapInServer: is a server used to test :SnapIn: functionality when running :ConformanceTests:.
+
+- :SnapInEventPayload: is a single event that is sent to :SnapIn: server.
+  - :SnapInEventPayload: is of type `FunctionInput`.
+  - When sending an :SnapInEventPayload: to :TestSnapInServer:, it is safe to assume that :SnapInEventPayload: will never be undefined, null, or empty.
+  - When sending an :SnapInEventPayload: to :TestSnapInServer:, you should send a single :SnapInEventPayload: in the request body without wrapping it in an array.
+
+- :TestCallbackServer: is a server for testing callbacks.
+
+- :ExtractionFunction: is :Function: named "extraction". It is responsible reading data from :API: and pushing it to :DevRevServers: based on various event_type values.
+
+- :DataExtractionGuide: is provided in the resource [data-extraction.md](docs/data-extraction.md).
+  - :DataExtractionGuide: should serve as a generic guide for the implementation of :ExtractionFunction:.
+
+- :DataExtractionRulesForEmittingEvents: is provided in the resource [data-extraction-rules-for-emitting-events.md](docs/data-extraction-rules-for-emitting-events.md).
+  - :DataExtractionRulesForEmittingEvents: should serve as rules for emitting events for :ExtractionFunction:.
+
+- :AttachedJSONOfTheAcceptanceTest: is a JSON file that is referenced in the resource of :AcceptanceTests:.
+
+- :ChefCLI: is command line tool for validating :ExternalDomainMetadataJSONObject:, :InitialDomainMappingJSONObject: and :NormalizationFunction:.
+  - Path to :ChefCLI: executable is provided in environment variable `CHEF_CLI_PATH`.
+
+- :ConnectionDataKey: is field `:SnapInEventPayload:["payload"]["connection_data"]["key"]`.
+
+- :ConnectionDataOrgID: is field `:SnapInEventPayload:["payload"]["connection_data"]["org_id"]`.
+
+- :Credentials: are credentials for :API:.
+
+- :ArtifactName: is the name of the artifact being extracted.
+
+- :ExtractionStateObject: is an object representing the state of :ExtractionFunction:.
+
+- :InitialExtractionStateObject: is the initial state of :ExtractionStateObject:.
+  - :InitialExtractionStateObject: should be an instance of :ExtractionStateObject:.
+  - :InitialExtractionStateObject: should be :ExtractionStateObject: with all "completed" fields set to false, and all the rest of the fields in :ExtractionStateObject: set to undefined, false, 0, or empty string, depending on the type of the field.
+
+- :CompleteExtractionStateObject: is the complete state of :ExtractionStateObject:.
+  - :CompleteExtractionStateObject: should be an instance of :ExtractionStateObject:.
+  - :CompleteExtractionStateObject: should be :ExtractionStateObject: have all the fields set indicating that the extraction is complete for all :ArtifactName:s.
+
+- :WorkerThread: is a separate file in which all operations accessing external services or data providers must be implemented.
+  - :WorkerThread: must be implemented in TypeScript
+  - :WorkerThread: must be referenced with a .ts (TypeScript) extension, not .js (JavaScript).
+
+- :SpawnMethod: is a method from :AirdropSDKLibrary: that is used to spawn :WorkerThread:.
+  - :ExtractionFunction: should invoke :SpawnMethod: to spawn :WorkerThread:.
+  - Here are the rules for invoking :SpawnMethod:
+    - "isLocalDevelopment" *must not* be set.
+    - "initialState" should be set to :InitialExtractionStateObject:.
+
+- :DevRevObject: is a DevRev object.
+
+- :DevRevFields: Are fields of the the certain :DevRevObject:.
+
+- :ObjectPRD: is a document describing how the :API: objects map to the :DevRevObject: (with corresponding :DevRevFields: mappings).
 
 ***Non-Functional Requirements:***
 
-- The Snap-In must be implemented in TypeScript (The Implementation).
+- :Implementation: of :SnapIn: must be in TypeScript.
 
-- The Snap-In will run on Node.js as the runtime environment.
+- :SnapIn: will run on Node.js as the runtime environment.
 
-- The Snap-In should use The Airdrop SDK Library version "1.9.0" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
+- :SnapIn: should use :AirdropSDKLibrary: version "1.9.0" for handling data extraction and loading, pushing data, event-driven actions, state management, and artifact handling.
 
 - Use snake_case for JSON keys.
 
-- The Implementation should include unit tests using Jest framework. The required unit test coverage threshold should be set to 60% (but please note that if the unit tests are failing the reported unit test coverage is not correct, that is, it's lower than it actually is).
+- :Implementation: should include unit tests using Jest framework. The required unit test coverage threshold should be set to 50% (but please note that if the unit tests are failing the reported unit test coverage is not correct, that is, it's lower than it actually is).
 
-- The code of The Function (including tests) should be in a subfolder at the path `src/functions`. The folder name should correspond to the function name.
+- The code of :Function: (including tests) should be in a subfolder at the path `src/functions`. The folder name should correspond to the function name.
 
-- The shared code (including libraries, utilities, adapters, and other common code) used by multiple The Function should be placed in the `src/core` folder. The code in this folder should not depend on any specific The Function implementation.
+- The shared code (including libraries, utilities, adapters, and other common code) used by more than one :Function: should be placed in the `src/core` folder. The code in this folder should not depend on any specific :Function: implementation.
 
-- During the data extraction phase, The Normalization Function's "data" field for specific record type should map precisely the fields that are present in The External Domain Metadata JSON object for that record type. The Normalization Function should map no additional fields other than those specified in The External Domain Metadata JSON object, and also no object fields from The External Domain Metadata JSON should be omitted in normalization.
+- During the data extraction phase, the "data" field of :NormalizationFunction: for specific record type should map precisely the fields that are present in :ExternalDomainMetadataJSONObject: for that record type. :NormalizationFunction: should map no additional fields other than those specified in :ExternalDomainMetadataJSONObject:, and also no object fields from :ExternalDomainMetadataJSONObject: should be omitted in normalization.
 
+- When processing an :API: response that contains an array of elements, all subsequent requests to :API: for each element must be executed asynchronously, rather than sequentially (and properly awaited).
+
+- :ExtractionFunction: should not stringify error messages. If an error is thrown, it should be logged before throwing it.
+
+- :ExtractionFunction: is the only :Function: that should invoke :SpawnMethod: to spawn :WorkerThread:.
+
+- :SnapIn: should use `axios` library for making HTTP requests.
+
+- Requests to :API: *MUST NOT* be mocked.
 
 ***Test Requirements:***
 
-- The Conformance Tests of The Snap-In should be implemented in TypeScript with target language version es2017. The Conformance Tests should utilize the TypeScript target language version es2017 with configuration settings for module interoperability, strict type checking, declaration file generation, and JSON module support.
+- :ConformanceTests: should be implemented in TypeScript with target language version es2017.
+  - :ConformanceTests: should utilize the TypeScript target language version es2017 with configuration settings for module interoperability, strict type checking, declaration file generation, and JSON module support.
 
-- The Conformance Tests must be in the top folder.
+- :ConformanceTests: will run on Node.js as the runtime environment.
 
-- The Conformance Tests will run on Node.js as the runtime environment.
+- :ConformanceTests: will be executed using the "npm test" command. The command "npm test" should be accessible in the `package.json` file of :ConformanceTests:.
 
-- The Conformance Tests will be executed using the "npm test" command. The command "npm test" should be accessible in the `package.json` file of The Conformance Tests.
+- :ConformanceTests: timeout is 120 seconds. If the timeout elapses, the process executing :ConformanceTests: will be terminated.
 
-- The Conformance Tests must complete within 120 seconds (The Conformance Tests Timeout). If The Conformance Tests Timeout elapses, the process executing The Conformance Tests will be terminated.
+- :TestSnapInServer: runs on Node.js and is accessible at http://localhost:8000/handle/sync.
 
-- The Snap-In runs on Node.js and the test server is accessible at http://localhost:8000/handle/sync (The Test Snap-In Server).
+- :ConformanceTests: should use :TestSnapInServer: - do not use mock server.
 
-- The Conformance Tests should use the The Test Snap-In Server - do not use mock server.
+- :ConformanceTests: should spin up :TestCallbackServer: at http://localhost:8002 for testing callbacks.
+  - :ConformanceTests: *MUST NOT* send :SnapInEventPayload: directly to :TestCallbackServer:.
+  - :Implementation: *MUST NOT* send :SnapInEventPayload: directly to :TestCallbackServer:.
 
-- The Conformance Tests should spin a server at http://localhost:8002 for testing callbacks (The Callback Server).
-  - The Conformance Tests *MUST NOT* send the event directly to The Callback Server.
-  - The Implementation Code *MUST NOT* send the event directly to The Callback Server.
+- :DevRevServers: run at http://localhost:8003 and they must not be mocked.
 
-- The DevRev Server runs at http://localhost:8003, so it must not be mocked.
+- :WorkerDataServer: is accessible at http://localhost:8003/external-worker and it must not be mocked.
 
-- The Worker Data Server is part of The DevRev Server and is accessible at http://localhost:8003/external-worker, so it must not be mocked.
+- File `jest.setup.js` is managed externally and cannot be modified within :ConformanceTests:.
 
-- The API server is running at http://localhost:8004, so it must not be mocked.
+- All test files from :ConformanceTests: must use the `.test.ts` suffix to be discoverable by Jest's default test pattern matching.
 
-- The `jest.setup.js` file is managed externally and cannot be modified within The Conformance Tests.
+- :ConformanceTests: should send a single :SnapInEventPayload: to :TestSnapInServer: in the request body without wrapping it in an array.
+  - It is safe to assume that :SnapInEventPayload: will never be undefined, null, or empty.
 
-- All test files from The Conformance Tests must use the `.test.ts` suffix to be discoverable by Jest's default test pattern matching.
+- If using :AttachedJSONOfTheAcceptanceTest: in :AcceptanceTests:, you should:
+  - Store :AttachedJSONOfTheAcceptanceTest: in a separate JSON file.
+  - Make sure to replace placeholders of the credentials (in `event["payload"]["connection_data"]["key"]` and `event["payload"]["connection_data"]["org_id"]`) in :AttachedJSONOfTheAcceptanceTest: with the actual values (credentials from :API:).
 
-- The Conformance Tests should send a single event to the Snap-In Server in the request body without wrapping it in an array.
-  - It is safe to assume that event payload will never be undefined, null, or empty.
-
-- Do not invoke The Function with:
-  - "function_name" that doesn't exist.
-  - Empty event payload.
-  - "None" event payload.
-  - Missing "execution_metadata" field.
-
-- More generally, for any unexpected events sent to The Snap-In Server, do not rely on the returned status codes being correct or meaningful.
-
-- If generating The Acceptance Test that references a JSON file (The Attached JSON Of The Acceptance Test) in the resource, you should:
-  - Store The Attached JSON Of The Acceptance Test in a separate JSON file.
-  - Make sure to replace placeholders of the credentials (in `event["payload"]["connection_data"]["key"]` and `event["payload"]["connection_data"]["org_id"]`) in The Attached JSON Of The Acceptance Test with the actual values (credentials from The API).
-
-- The Conformance Tests should encourage code reuse. Most notably, you should avoid duplication of the following:
-  - Setting up The Callback Server,
+- :ConformanceTests: should encourage code reuse. Most notably, you should avoid duplication of the following:
+  - Setting up :TestCallbackServer:,
   - Reading environment variables,
-  - Defining the test event payload sent to The Snap-In Server.
+  - Defining the test :SnapInEventPayload: sent to :TestSnapInServer:.
+
+- :ConformanceTests: *MUST NOT*:
+  - Call :DevRevServers: directly, unless explicitly instructed to do so.
+  - Retrieve artifacts from :DevRevServers: directly and write tests based on them.
+
+- :ConformanceTests: *MUST NOT* generate the following tests (unless explicitly instructed to do so):
+  - Tests that have incomplete :SnapInEventPayload: payloads
+    - You can assume that :SnapInEventPayload: sent to :TestSnapInServer: is valid and complete.
+    - You need not test situations with incomplete :SnapInEventPayload: payloads (empty, None, missing fields, etc.).
+  - Tests with rate limiting (rate limiting will be handled through :AcceptanceTests:).
+  - If test is testing :ExtractionFunction:, it should not do retries on the snap-in server and invoke :Function: multiple times.
+  - Tests that rely on status codes for information of success.
+  - Tests that validate :NormalizationFunction: with :ChefCLI: (unless explicitly instructed to do so).
+
+- If :ConformanceTests: is testing "data extraction" part of :ExtractionFunction:, it should create *at most* one test for validating the data extraction logic.
+ - If previous :ConformanceTests: already exists for invoking "data extraction" part of :ExtractionFunction:, you need not create a test for it once again.
+
+- If :ConformanceTests: is testing "metadata extraction" part of :ExtractionFunction:, :ConformanceTests: *MUST NOT* test the contents of :ExternalDomainMetadataJSONObject: against the expected structure and contents.
 
 # The TypeScript Node.js application boilerplate
 
-***Non-Functional Requirements:***
-
-- Logic of pushing data to The DevRev Servers must be implemented in the worker thread and invoked with the "spawn" method from The Airdrop SDK Library.
-
-- The Worker Thread must be implemented in TypeScript and *The Worker Thread MUST BE* referenced with a .ts (TypeScript) extension, not .js (JavaScript).
-
-- The Function being implemented *MUST not* be called "extraction" or "loading".
-
-- {% include "templates/should_not_modify_extraction_function.plain" %}
-
 ***Functional Requirements:***
 
-- Implement The Function that only checks if The Function can be invoked.
-
-- Implement The Function called "test_external_sync_units" (The External Sync Units Test Function) that provides a test of the 'external sync units' part of the extraction workflow as described in the resource [external-sync-units-extraction.mdx](docs/external-sync-units-extraction.mdx).
-  - If "event_type" equals "EXTRACTION_EXTERNAL_SYNC_UNITS_START", The External Sync Units Test Function should:
-    - Only emit event "EXTRACTION_EXTERNAL_SYNC_UNITS_DONE".
-
-  ***Acceptance Tests:***
-
-  - Test The Function using the resource [external_sync_unit_check.json](test_data/external_sync_unit_check.json). Test is successful if The Callback Server receives from DevRev an event with "event_type" that equals "EXTRACTION_EXTERNAL_SYNC_UNITS_DONE". The test must not send the event directly to The Callback Server.
-
-- Implement The Function called "data_extraction_check" (The Data Extraction Check Function) that provides a test of the 'data extraction' part of the extraction workflow as described in the resource [data-extraction.md](docs/data-extraction.md). The Data Extraction Check Function should:
-  - if "event_type" equals "EXTRACTION_DATA_START" or "EXTRACTION_DATA_CONTINUE", The Data Extraction Check Function should:
-    - Initialize a single repo "users"
-    - normalize the users data using The Normalization Function
-    - push the normalized users data to The DevRev Servers
-    - Emit event "EXTRACTION_DATA_DONE".
-    - Note: The Data Extraction Check Function should be simplified and should disregard all other details.
-
-  ***Acceptance Tests:***
-  
-  - Test The Function using the resource [data_extraction_check.json](test_data/data_extraction_check.json). Test is successful if The Callback Server receives from DevRev an event with "event_type" that equals "EXTRACTION_DATA_DONE". The test must not send the event directly to The Callback Server.
+- Implement :Function: "health_check" that only checks if :Function: can be invoked.

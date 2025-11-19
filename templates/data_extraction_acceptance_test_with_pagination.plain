@@ -1,0 +1,7 @@
+Test :ExtractionFunction: using the resource [{{ resource_name }}](test_data/{{ resource_name }}).
+  - Expect :TestCallbackServer: to receive from DevRev a **single** event with "event_type" that equals "EXTRACTION_DATA_DONE".
+  - Let `artifact_array = <event_from_callback_server>["event_data"]["artifacts"]` (array of objects).
+    - Expect `len(artifact_array) > 0`.
+    - Out of `artifact_array`, expect one of the elements to have "item_type" equal to "{{ artifact_name }}" (`:= {{ artifact_name }}_artifact`) and `{{ artifact_name }}_artifact["item_count"]={{ expected_item_count }}`.
+    - If `{{ artifact_name }}_artifact["item_count"] < {{ expected_item_count }}`, this indicates that not all the {{ artifact_name }} data was extracted.
+    - If `{{ artifact_name }}_artifact["item_count"] < {{ expected_item_count }}` and equals {{ fetched_page_size }}, it means :ExtractionFunction: fetched only one page instead of all pages. Pages should be fetched iteratively until all pages are fetched.

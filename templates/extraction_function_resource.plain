@@ -1,0 +1,6 @@
+If "event_type" equals "EXTRACTION_DATA_START" or "EXTRACTION_DATA_CONTINUE" :ExtractionFunction: should extract the '{{ record_type }}' data, while preserving previous artifact pushes of data.
+  - Refer to resource [{{ record_type }}-extraction.md](product_requirements/{{ record_type }}-extraction.md) for details on {{ record_type }} extraction specification.
+  - Refer to resource [high-level-data-extraction-plan.md](product_requirements/high-level-data-extraction-plan.md) for:
+    - The order of artifact extraction.
+    - Information if we should use pagination or not for the extraction of the '{{ record_type }}' data.
+  - {{additional_instructions}}
