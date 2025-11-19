@@ -6,9 +6,9 @@ NPM_INSTALL_OUTPUT_FILTER="up to date in|added [0-9]* packages, removed [0-9]* p
 ANSI_ESCAPE_PATTERN="s/\x1b\[[0-9;]*[mK]//g"
 
 # Maximum number of characters to display from log files
-SNAP_IN_LOG_MAX_CHARS=80000
-DEVREV_SERVER_LOG_MAX_CHARS=40000
-PROXY_SERVER_LOG_MAX_CHARS=20000
+SNAP_IN_LOG_MAX_CHARS=100000
+DEVREV_SERVER_LOG_MAX_CHARS=600000
+PROXY_SERVER_LOG_MAX_CHARS=30000
 
 # Function to print a log file, truncating it if it's too large
 print_log_file() {
@@ -52,19 +52,13 @@ source "$EXEC_DIR/.env"
 set +a  # stop automatically exporting
 
 # Function to check and kill any Node process running on port 8000 (React development server)
-check_and_kill_node_server() {
+check_and_kill_processed_on_port() {
     local port=${1:-8000}  # Default to port 8000 if no port is provided
     # Find process listening on specified port
     local pid=$(lsof -i :$port -t 2>/dev/null)
     if [ ! -z "$pid" ]; then
-        if ps -p $pid | grep -q "node"; then
             printf "Found server running on port $port. Killing it...\n"
-            kill $pid 2>/dev/null
-            sleep 1  # Give the process time to terminate
-            if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
-                printf "Node server terminated.\n"
-            fi
-        fi
+            kill -9 "$pid" 2>/dev/null
     fi
 }
 
@@ -84,10 +78,20 @@ get_children() {
 
 # Function to start the mock DevRev server
 start_mock_devrev_server() {
-    python3 "$SCRIPT_DIR/mock_devrev_server.py" > "$MOCK_DEVREV_SERVER_LOG" 2>&1 &
+    python3 -u "$SCRIPT_DIR/mock_devrev_server.py" > "$MOCK_DEVREV_SERVER_LOG" 2>&1 &
     MOCK_SERVER_PID=$!
-    sleep 2  # Give the server time to start
-    printf "\n"
+
+    # Wait until the mock DevRev server prints its startup line to the log
+    while true; do
+        printf "Waiting for the DevRev server to start...\n"
+        # If process already died, surface error and logs
+        if grep -iq -E "Starting DevRev server on|Uvicorn running on" "$MOCK_DEVREV_SERVER_LOG" 2>/dev/null; then
+            break
+        fi
+        sleep 0.1
+    done
+
+    printf "DevRev server is up and running!\n\n"
 }
 
 start_proxy_server() {
@@ -96,11 +100,19 @@ start_proxy_server() {
         printf "Error: rate_limiting_proxy.py file not found in $EXEC_DIR/rate_limiting_proxy.py. This file should exist (and should be adopted for 3rd party service's rate limiting response format).\n"
         exit 69
     fi
-    python3 "$EXEC_DIR/rate_limiting_proxy.py" > "$PROXY_SERVER_LOG" 2>&1 &
+    # The -u flag is critical here to disable python's output buffering, ensuring logs are written immediately.
+    python3 -u "$EXEC_DIR/rate_limiting_proxy.py" > "$PROXY_SERVER_LOG" 2>&1 &
     PROXY_SERVER_PID=$!
-    sleep 2  # Give the server time to start
 
-    # Check if the proxy server started successfully.
+    # Wait until the proxy server prints its startup line to the log
+    while true; do
+      printf "Waiting for the proxy server to start...\n"
+      if grep -iq -E "Starting proxy server on" "$PROXY_SERVER_LOG" 2>/dev/null; then
+        break
+      fi
+      sleep 0.1
+    done
+
     if ! kill -0 "$PROXY_SERVER_PID" > /dev/null 2>&1; then
         wait "$PROXY_SERVER_PID"
         EXIT_CODE=$?
@@ -110,15 +122,16 @@ start_proxy_server() {
             exit 69
         fi
     fi
-    printf "\n"
+
+    printf "Proxy server is up and running!\n\n"
 }
 
 # Cleanup function to ensure all processes are terminated
 cleanup() {
     # Kill any running npm processes started by this script
     if [ ! -z "${NPM_PID+x}" ]; then
-        pkill -P $NPM_PID 2>/dev/null
-        kill $NPM_PID 2>/dev/null
+        pkill -9 -P $NPM_PID > /dev/null 2>&1
+        kill -9 $NPM_PID > /dev/null 2>&1
     fi
 
     # Kill React app and its children if they exist
@@ -127,12 +140,12 @@ cleanup() {
         get_children $SNAP_IN_PID
         
         # Kill the main process
-        kill $SNAP_IN_PID 2>/dev/null
+        kill -9 $SNAP_IN_PID > /dev/null 2>&1
 
         # Kill all the subprocesses
         for pid in "${processes_to_kill[@]}"
         do
-            kill $pid 2>/dev/null
+            kill -9 $pid > /dev/null 2>&1
         done
 
         if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
@@ -142,7 +155,7 @@ cleanup() {
 
     # Kill mock DevRev server if it exists
     if [ ! -z "${MOCK_SERVER_PID+x}" ]; then
-        kill $MOCK_SERVER_PID 2>/dev/null
+        kill -9 $MOCK_SERVER_PID > /dev/null 2>&1
         if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
             printf "Mock DevRev server terminated!\n"
         fi
@@ -150,7 +163,7 @@ cleanup() {
 
     # Kill proxy server if it exists
     if [ ! -z "${PROXY_SERVER_PID+x}" ]; then
-        kill $PROXY_SERVER_PID 2>/dev/null
+        kill -9 $PROXY_SERVER_PID > /dev/null 2>&1
         if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
             printf "Proxy server terminated!\n"
         fi
@@ -166,32 +179,15 @@ cleanup() {
 trap cleanup EXIT SIGINT SIGTERM
 
 # Check for and kill any existing servers from previous runs
-check_and_kill_node_server 8000
-check_and_kill_node_server 8002
+check_and_kill_processed_on_port 8000
+check_and_kill_processed_on_port 8002
+check_and_kill_processed_on_port 8003
+check_and_kill_processed_on_port 8004
 
-# Ensure nothing is running on port 8003, then start the mock DevRev server
-existing_pids=$(lsof -i :8003 -t 2>/dev/null)
-if [ ! -z "$existing_pids" ]; then
-	printf "Killing existing process(es) on port 8003: %s\n" "$existing_pids"
-	for pid in $existing_pids; do
-		kill $pid 2>/dev/null
-	done
-	sleep 1
-fi
 start_mock_devrev_server
 
 # Set HTTPS_PROXY environment variable to point to proxy server
 export HTTPS_PROXY="http://localhost:8004"
-
-# Ensure nothing is running on port 8004, then start the proxy server
-existing_pids_8004=$(lsof -i :8004 -t 2>/dev/null)
-if [ ! -z "$existing_pids_8004" ]; then
-    printf "Killing existing process(es) on port 8004: %s\n" "$existing_pids_8004"
-    for pid in $existing_pids_8004; do
-        kill $pid 2>/dev/null
-    done
-    sleep 1
-fi
 start_proxy_server
 
 # Check if chef-cli binary exists at CHEF_CLI_PATH
@@ -207,9 +203,9 @@ if [ -z "$EXTRACTED_FILES_FOLDER_PATH" ]; then
 fi
 
 # Check if EXTRACTED_FILES_FOLDER_PATH does not end with "node_$1/build"
-if [[ "$EXTRACTED_FILES_FOLDER_PATH" != *"node_$1/extracted_files" ]]; then
+if [[ "$EXTRACTED_FILES_FOLDER_PATH" != *"node_build/extracted_files" ]]; then
     echo "Error: EXTRACTED_FILES_FOLDER_PATH should end with 'node_$1/extracted_files'."
-    echo "Note: The value of EXTRACTED_FILES_FOLDER_PATH should be <path_to_directory_where_you_rendered_the_snap-in>/node_$1/extracted_files."
+    echo "Note: The value of EXTRACTED_FILES_FOLDER_PATH should be <path_to_directory_where_you_rendered_the_snap-in>/node_build/extracted_files."
     exit 69 # EXIT_SERVICE_UNAVAILABLE
 fi
 
@@ -247,11 +243,11 @@ fi
 
 # Check if the node subfolder exists
 if [ -d "$NODE_SUBFOLDER" ]; then
-  # Find and delete all files and folders except "node_modules", "build", and "package-lock.json"
-  find "$NODE_SUBFOLDER" -mindepth 1 ! -path "$NODE_SUBFOLDER/node_modules*" ! -path "$NODE_SUBFOLDER/build*" ! -name "package-lock.json" -exec rm -rf {} +
+  # Find and delete all files and folders except "node_modules"
+  find "$NODE_SUBFOLDER" -mindepth 1 ! -path "$NODE_SUBFOLDER/node_modules*" -exec rm -rf {} +
   
   if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
-    printf "Cleanup completed, keeping 'node_modules' and 'package-lock.json'.\n"
+    printf "Cleanup completed, keeping 'node_modules'.\n"
   fi
 else
   if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
@@ -333,11 +329,11 @@ fi
 
 # Check if the conformance tests node subfolder exists
 if [ -d "$NODE_CONFORMANCE_TESTS_SUBFOLDER" ]; then
-  # Find and delete all files and folders except "node_modules", "build", and "package-lock.json"
-  find "$NODE_CONFORMANCE_TESTS_SUBFOLDER" -mindepth 1 ! -path "$NODE_CONFORMANCE_TESTS_SUBFOLDER/node_modules*" ! -path "$NODE_CONFORMANCE_TESTS_SUBFOLDER/build*" ! -name "package-lock.json" -exec rm -rf {} +
+  # Find and delete all files and folders except "node_modules"
+  find "$NODE_CONFORMANCE_TESTS_SUBFOLDER" -mindepth 1 ! -path "$NODE_CONFORMANCE_TESTS_SUBFOLDER/node_modules*" -exec rm -rf {} +
   
   if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
-    printf "Cleanup completed, keeping 'node_modules' and 'package-lock.json'.\n"
+    printf "Cleanup completed, keeping 'node_modules'.\n"
   fi
 else
   if [ "${VERBOSE:-}" -eq 1 ] 2>/dev/null; then
@@ -367,14 +363,16 @@ fi
 
 printf "\n#### Running conformance tests...\n"
 
-npm test -- --runInBand --setupFilesAfterEnv="$SCRIPT_DIR/jest.setup.js" --detectOpenHandles 2>&1 | sed -E "$ANSI_ESCAPE_PATTERN"
+npm test -- --runInBand --setupFilesAfterEnv="$SCRIPT_DIR/jest.setup.js" --detectOpenHandles --forceExit 2>&1 | sed -E "$ANSI_ESCAPE_PATTERN"
 conformance_tests_result=$?
 
 printf "\n#### Output of the DevRev server log file:\n\n"
 print_log_file "$MOCK_DEVREV_SERVER_LOG" "$DEVREV_SERVER_LOG_MAX_CHARS"
 printf "\n#### Output of The Snap-In log file:\n"
 print_log_file "$NODE_SUBFOLDER/app.log" "$SNAP_IN_LOG_MAX_CHARS"
-printf "\n"
+# uncomment if you need the logs of the proxy server
+# printf "\n#### Output of the proxy server log file:\n\n"
+# print_log_file "$PROXY_SERVER_LOG" "$PROXY_SERVER_LOG_MAX_CHARS"
 printf "\n"
 
 if [ $conformance_tests_result -ne 0 ]; then
