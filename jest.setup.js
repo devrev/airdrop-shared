@@ -88,6 +88,7 @@ const resetMockServer = async () => {
       port: 8003,
       path: '/reset-mock-server',
       method: 'POST',
+      agent: false,
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData)
@@ -120,19 +121,62 @@ const resetMockServer = async () => {
   }
 };
 
-const originalBeforeEach = global.beforeEach;
+// Function to end rate limiting
+const endRateLimiting = async () => {
+  try {
+    const http = require('http');
+    
+    // Simple HTTP request that properly closes the connection
+    const postData = '';
+    const options = {
+      hostname: 'localhost',
+      port: 8004,
+      path: '/end_rate_limiting',
+      method: 'POST',
+      agent: false,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
 
-global.beforeEach = (fn, timeout) => {
-  originalBeforeEach(async () => {
-    try {
-      // Reset the mock server state before each test
-      await resetMockServer();
+    const response = await new Promise((resolve, reject) => {
+      const req = http.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => resolve({ status: res.statusCode, data }));
+      });
       
-      // Execute the original beforeEach function
-      await fn();
-    } catch (err) {
-      expect(`beforeEach failed: ${err.message}`).toBe('beforeEach should not fail');
-      throw err;
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Request timeout'));
+      });
+      
+      req.setTimeout(5000);
+      req.write(postData);
+      req.end();
+    });
+    
+    if (response.status !== 200) {
+      console.warn(`Failed to end rate limiting: ${response.status}`);
     }
-  }, timeout);
+  } catch (error) {
+    console.warn(`Could not connect to rate limiting server: ${error.message}`);
+  }
 };
+
+// This hook runs BEFORE each test in every test file.
+beforeEach(async () => {
+  try {
+    await resetMockServer();
+    await endRateLimiting();
+  } catch (error) {
+    originalConsole.error(
+      '[jest.setup.js] beforeEach: Failed to reset mock server. ' +
+      `Error: ${error instanceof Error ? error.message : String(error)}`
+    );
+    // Don't throw - allow tests to run even if reset fails
+    // The internal resetMockServer() already handles errors gracefully
+  }
+});

@@ -378,4 +378,5 @@ async def download_jsonl_gz_file(file_name: str):
 
 if __name__ == "__main__":
     import uvicorn
+    print(f"Starting DevRev server on http://localhost:8003")
     uvicorn.run(app, host="localhost", port=8003)
