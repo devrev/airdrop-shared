@@ -38,7 +38,7 @@ const externalSyncUnits: ExternalSyncUnit[] = [
 - `item_count`: The number of items (issues, tickets, comments or others) in the external system.
   Item count should be provided if it can be obtained in a lightweight manner, such as by calling an API endpoint.
   If there is no such way to get it (for example, if the items would need to be extracted to count them),
-  then the item count should be `-1` to avoid blocking the import with long-running queries.
+  then the item count should be set to `undefined`.
 
 The snap-in must respond to Airdrop with a message, which contains a list of external sync units as a payload:
 

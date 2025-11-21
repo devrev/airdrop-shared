@@ -76,8 +76,8 @@ processTask<ExtractorState>({
 
         // If this is an incremental sync, we need to reset the state for the item types.
         if (adapter.event.payload.event_context.mode === SyncMode.INCREMENTAL) {
-          adapter.state.tasks = initialState.tasks;
-          adapter.state.attachments = initialState.attachments;
+          adapter.state.tasks = initialState.tasks;  // Or something along the lines of adapter.state.tasks.completed = false;
+          adapter.state.attachments = initialState.attachments;  // Or something along the lines of adapter.state.attachments.completed = false;
           adapter.state.tasks.modifiedSince = adapter.state.lastSuccessfulSyncStarted;
         }
       }
