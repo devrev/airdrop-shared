@@ -1,3 +1,0 @@
-The {{ external_system_name }} Internal Client is a TypeScript service that communicates with The API. These are the rules for The {{ external_system_name }} Internal Client:
-  - If we need to create a new request to The API, we must create a new method in The {{ external_system_name }} Internal Client.
-  - Communication with The API must be completely abstracted away from The Function. The Function must be able to initialize The {{ external_system_name }} Internal Client, call the relevant method from The {{ external_system_name }} Internal Client and get the response from The API.

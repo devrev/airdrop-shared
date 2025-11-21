@@ -1,7 +1,6 @@
-Test the rate limiting of The Function "{{ function_name }}" with the following flow:
+Test the rate limiting of :Function: "{{ function_name }}" with the following flow:
   - Make a POST request to "http://localhost:8004/start_rate_limiting" with body `{ "test_name": <identifyer of the test>}`.
-  - Invoke The Function "{{ function_name }}" with valid credentials and all required parameters.
+  - Invoke :Function: "{{ function_name }}" with valid credentials and all required parameters.
   - Expect: `status_code = 429`.
-  - Expect: `api_delay > 0` and `api_delay <= 3`. If api_delay is bigger than 3, assume the problem is that we did not calculate the api_delay correctly in The Implementation Code.
-  - Make a POST request to "http://localhost:8004/end_rate_limiting".
+  - Expect: `api_delay > 0` and `api_delay <= 3`. If api_delay is bigger than 3, assume the problem is that we did not calculate the api_delay correctly in :Implementation:.
     

@@ -1,0 +1,1 @@
+The :Function: 'get_external_domain_metadata' should return :ExternalDomainMetadataJSONObject: with the record type "{{ record_type }}" based on external fields from file [{{ product_requirement_file }}]({{ product_requirement_file }}), while preserving any existing record types.
