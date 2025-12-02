@@ -1,0 +1,1 @@
+Implement the :Function: "fetch_{{ record_type }}" that fetches all {{ record_type }} as specified in :ObjectPRD: [{{ record_type }}-extraction.md](product_requirements/{{ record_type }}-extraction.md) using {{ pagination_rule }}.
