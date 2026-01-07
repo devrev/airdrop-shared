@@ -1,9 +1,9 @@
 ***Definitions:***
 
-- The structure of :ExternalDomainMetadataJSONObject: is specified by the JSON schema defined in the resource [external_domain_metadata_schema.json](external_domain_metadata_schema.json).
+- :ExternalDomainMetadataJSONObjectStructure: is the structure of :ExternalDomainMetadataJSONObject: is specified by the JSON schema defined in the resource [external_domain_metadata_schema.json](external_domain_metadata_schema.json).
   - Please note that all refers_to keys in reference and typed_reference fields must use the format "#record:<record_type_key>", where <record_type_key> matches a key in the top-level record_types. This ensures references are unambiguous and valid. Use {} as the value to refer by default identifier (id), or specify { "by_field": "field_name" } to use a custom key.
 
-- A “display name” is the human-readable label of a field within a given record type.
+- :ExternalDomainMetadataJSONObjectDisplayName: is the display name (human-readable label) of a field within a given record type.
 
 ***Non-Functional Requirements:***
 
@@ -15,6 +15,10 @@
 
 ***Test Requirements:***
 
+- Set timeout for each test to 30 seconds.
+
+- :ConformanceTests: should print the EDM to the console.
+
 - Validate generated :ExternalDomainMetadataJSONObject: with :ChefCLI: using the command "${CHEF_CLI_PATH} validate-metadata":
   - This command reads JSON object from stdin.
   - The path to :ChefCLI: executable is provided in the environment variables `CHEF_CLI_PATH`.
@@ -23,8 +27,7 @@
 
 - :ExternalDomainMetadataJSONObject: *MUST* be validated solely against :ChefCLI:.
   - You *MUST NOT* validate :ExternalDomainMetadataJSONObject: against the literal JSON contents of :ExternalDomainMetadataJSONObject:.
-  - :ConformanceTests: should have *ONLY TWO* tests
-    - That :Function: returning :ExternalDomainMetadataJSONObject: can be invoked successfully
+  - :ConformanceTests: should have *ONLY ONE* test
     - :ChefCLI: validation using the command "${CHEF_CLI_PATH} validate-metadata"
 
 - :ExternalDomainMetadataJSONObject: should always be read from :Implementation: (and not recreated in :ConformanceTests:)
