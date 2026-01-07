@@ -510,6 +510,16 @@ properties:
                     Possible mappings of external record types to DevRev object types.
                 type: object
         type: object
+    devrev_metadata_version:
+        description: |
+            The version of the DevRev metadata on which the offered options are
+            based.
+        format: int64
+        type: integer
+    format_version:
+        description: The format version of initial domain mapping.
+        format: text
+        type: string
 title: airdrop-recipe-initial-domain-mappings-install-request
 type: object
 
