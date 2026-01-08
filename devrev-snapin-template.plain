@@ -2,8 +2,6 @@
 
 - :SnapIn: is a TypeScript Node.js application.
 
-- :Implementation: is how :SnapIn: is implemented.
-
 - :Function: implements part of :SnapIn: functionality.
   - Details on how :Function: must be invoked are provided in the resource [FunctionInvocation](docs/function_invocation.mdx).
   - :Function: should only take the first event from the array of events and process it.
